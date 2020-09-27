@@ -276,28 +276,38 @@ void drawMenuBar(MenuBar *menuBar, ColorPalette *colorPalette, Size term_size) {
 // BUFFER LIST
 
 struct BufferList {
+  int cur;
   vector<TextBuffer> textBuffers;
 };
 
 void buildBufferList(BufferList *bufferList) {
-
+  bufferList->cur = 0;
+  bufferList->textBuffers.push_back({{0, 0}, {0, 2}, 0, 0, ""});
 }
 
-void handleInputBufferList(BufferList *bufferList, int key, Size term) {
-  
+void handleInputBufferList(BufferList *bufferList, int key, Size term_size) {
+// if buffer highlighted, highlight it
+// if buffer clicked, go to it
+  TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
+  handleInputTextBuffer(currentBuffer, key, {term_size.width, term_size.height - currentBuffer->pos.y});
 }
 
-void drawInputBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size term_size) {
-  
+void updateBufferList(BufferList *bufferList, Size term_size) {
+// if buffer saved, update it
+}
+
+void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size term_size) {
+// draw buffer list at y 1
+// draw cur buffer from y 2
+  TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
+  drawTextBuffer(currentBuffer, colorPalette, {term_size.width, term_size.height - currentBuffer->pos.y});
 }
 
 // GLOBALS
 
 bool running = true;
 ColorPalette colorPalette;
-Point textBufPos = {0,1};
 BufferList buffers;
-int curTextBuffer = 0;
 MenuBar menuBar;
 
 // PROGRAM
@@ -306,8 +316,8 @@ void init() {
   terminal_open();
   terminal_set("window.size=60x40");
   terminal_refresh();
-  buffers.textBuffers.push_back({{0, 0}, {0, 1}, 0, 0, ""});
   buildMenuBar(&menuBar);
+  buildBufferList(&buffers);
   buildColorPalette(&colorPalette);
 }
 
@@ -316,15 +326,16 @@ void handleInput(Size term_size) {
   if (key == TK_CLOSE)
     running = false;
   handleInputMenuBar(&menuBar, key, term_size);
-  handleInputTextBuffer(&(buffers.textBuffers[curTextBuffer]), key, {term_size.width, term_size.height-textBufPos.y});
+  handleInputBufferList(&buffers, key, term_size);
 }
 
 void update(Size term_size) {
+  updateBufferList(&buffers, term_size);
 }
 
 void draw(Size term_size) {
   terminal_clear();
-  drawTextBuffer(&(buffers.textBuffers[curTextBuffer]), &colorPalette, {term_size.width, term_size.height-1});
+  drawBufferList(&buffers, &colorPalette, term_size);
   drawMenuBar(&menuBar, &colorPalette, term_size);
   terminal_refresh();
 }
