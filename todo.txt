@@ -1,0 +1,20 @@
+* create menu bar
+  * click options for dropdown
+  - click dropdown option to do something
+* color palletes
+* create text buffer
+* move caret left right down up
+* when move down/up save x pos
+* scroll screen with caret
+- multiple buffers
+- blinking cursor
+- buffer has filename -> "" by default
+- clickable menu options
+- new file -> creates new buffer
+- open file -> opens file explorer, when file is selected it is opened in a new buffer
+- save file -> saves the current buffer to the filename (if filename == "", prompts user to browse for path and input file name)
+- close file -> kills the current buffer, if unsaved prompts to save or not
+- undo/redo -> brute force it for now
+- cut/copy/paste
+- find
+- theme file
