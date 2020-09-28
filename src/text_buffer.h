@@ -7,6 +7,7 @@ class ColorPalette;
 
 struct TextBuffer {
   std::string name;
+  std::string filepath;
   Point offs;
   Point pos;
   int cached_x_pos;

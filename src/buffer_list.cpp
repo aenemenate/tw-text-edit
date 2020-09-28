@@ -4,7 +4,7 @@
 
 void buildBufferList(BufferList *bufferList) {
   bufferList->cur = 0;
-  bufferList->textBuffers.push_back({"New 1", {0, 0}, {0, 2}, 0, 0, ""});
+  bufferList->textBuffers.push_back({"New 1", "", {0, 0}, {0, 2}, 0, 0, ""});
 }
 
 void handleInputBufferList(BufferList *bufferList, int key, Size termSize) {
