@@ -6,6 +6,8 @@
 #define string       std::string
 #define vector       std::vector
 
+struct EditorData;
+
 // Data types
 
 struct Size {
@@ -17,6 +19,11 @@ struct Point {
 };
 
 enum Direction { Up, Down, Left, Right };
+
+// ACTIONS
+
+void NewFile(EditorData*);
+void CloseFile(EditorData*);
 
 // COLOR PALETTE
 
@@ -39,7 +46,7 @@ void buildColorPalette(ColorPalette *colorPalette) {
   colorPalette->menuBarColor                    = {"darker 0,43,54", "dark 101,123,131"};
   colorPalette->menuBarHighlightedColor         = {"darker 0,43,54", "101,123,131"};
   colorPalette->menuBarDropdownColor            = {"darker 0,43,54", "101,123,131"};
-  colorPalette->menuBarDropdownHighlightedColor = {"", ""};
+  colorPalette->menuBarDropdownHighlightedColor = {"147,161,161", "101,123,131"};
   colorPalette->bufferListColor                 = {"darker 0,43,54", "dark 101,123,131"};
   colorPalette->bufferListHighlightedColor      = {"darker 0,43,54", "light 101,123,131"};
   colorPalette->bufferListActiveColor           = {"147,161,161", "0,43,54"};
@@ -192,16 +199,21 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size) {
 
 // MENU BAR
 
+struct MenuFunction {
+  string name;
+  void (*callback_f)(EditorData*);
+};
+
 struct MenuDropdown {
   string name;
-  vector<string> options;
+  vector<MenuFunction> options;
   int getDropdownWidth();
 };
 
 int MenuDropdown::getDropdownWidth() {
     int biggest_opt = 0;
     for (int i = 0; i < options.size(); ++i) {
-      int option_size = options[i].length();
+      int option_size = options[i].name.length();
       biggest_opt = option_size > biggest_opt ? option_size : biggest_opt;
     }
     return biggest_opt;
@@ -214,26 +226,9 @@ struct MenuBar {
 
 void buildMenuBar(MenuBar *menuBar) {
   menuBar->clicked_opt = -1;
-  menuBar->options.push_back({"File", {"New   (Ctrl + N)", "Open  (Ctrl + O)", "Save  (Ctrl + S)", "Close (Ctrl + C)"}});
-  menuBar->options.push_back({"Edit", {"Undo  (Ctrl + U)", "Redo  (Ctrl + R)", "Cut   (Ctrl + X)", "Copy  (Ctrl + C)", "Paste (Ctrl + V)", "Find  (Ctrl + F)"}});
-  menuBar->options.push_back({"Options", {"Themes   (Ctrl + T)", "Settings (Ctrl + P)"/*, "Commands (Ctrl + M)"*/}});
-}
-
-void handleInputMenuBar(MenuBar *menuBar, int key, Size term_size) {
-  bool mouse_y_on_bar = terminal_state(TK_MOUSE_Y) == 0;
-  int mouse_x = terminal_state(TK_MOUSE_X);
-  int cur_x = 0;
-  if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
-    for (int i = 0; i < menuBar->options.size(); ++i) {
-      if (mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + menuBar->options[i].name.length()) {
-        menuBar->clicked_opt = i;
-        return;
-      }
-      else
-        menuBar->clicked_opt = -1;
-      cur_x += menuBar->options[i].name.length() + 1;
-    }
-  }
+  menuBar->options.push_back({"File", {{"New   (Ctrl + N)", NewFile}, {"Open  (Ctrl + O)", nullptr}, {"Save  (Ctrl + S)", nullptr}, {"Close (Ctrl + C)", CloseFile}}});
+  menuBar->options.push_back({"Edit", {{"Undo  (Ctrl + U)", nullptr}, {"Redo  (Ctrl + R)", nullptr}, {"Cut   (Ctrl + X)", nullptr}, {"Copy  (Ctrl + C)", nullptr}, {"Paste (Ctrl + V)", nullptr}, {"Find  (Ctrl + F)", nullptr}}});
+  menuBar->options.push_back({"Options", {{"Settings (Ctrl + P)", nullptr}/*, "Commands (Ctrl + M)"*/}});
 }
 
 void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size term_size) {
@@ -244,9 +239,18 @@ void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size term
     start_x += menuBar->options[i].name.length() + 1;
   }
   for (int j = 0; j < menuBar->options[menuBar->clicked_opt].options.size(); ++j) {
-      int x_end = start_x + terminal_print(start_x, j+1, menuBar->options[menuBar->clicked_opt].options[j].c_str()).width;
-      for (int i = x_end; i < start_x + menuBar->options[menuBar->clicked_opt].getDropdownWidth(); ++i)
-        terminal_put(i, j+1, ' ');
+    if (terminal_state(TK_MOUSE_Y) == 1 + j && terminal_state(TK_MOUSE_X) >= start_x 
+    && terminal_state(TK_MOUSE_X) < start_x + menuBar->options[menuBar->clicked_opt].getDropdownWidth()) {
+      terminal_color(colorPalette->menuBarDropdownHighlightedColor.fg.c_str());
+      terminal_bkcolor(colorPalette->menuBarDropdownHighlightedColor.bg.c_str());
+    }
+    else {
+      terminal_color(colorPalette->menuBarDropdownColor.fg.c_str());
+      terminal_bkcolor(colorPalette->menuBarDropdownColor.bg.c_str());
+    }
+    int x_end = start_x + terminal_print(start_x, j+1, menuBar->options[menuBar->clicked_opt].options[j].name.c_str()).width;
+    for (int i = x_end; i < start_x + menuBar->options[menuBar->clicked_opt].getDropdownWidth(); ++i)
+      terminal_put(i, j+1, ' ');
   }
 }
 
@@ -345,6 +349,8 @@ void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size ter
 
 // GLOBALS
 
+int next_file = 2;
+
 struct EditorData {
   bool running;
   ColorPalette colorPalette;
@@ -361,6 +367,67 @@ void buildEditorData(EditorData *editorData) {
   buildColorPalette(&(editorData->colorPalette));
 }
 
+// click menu bar options
+bool clickedMenuBarDropdown(EditorData* editorData, Size term_size) {
+  bool return_value = false;
+  int start_x = 0;
+  for (int i = 0; i < editorData->menuBar.clicked_opt; ++i) {
+    start_x += editorData->menuBar.options[i].name.length() + 1;
+  }
+  MenuDropdown *dropdown = &(editorData->menuBar.options[editorData->menuBar.clicked_opt]);
+  for (int j = 0; j < dropdown->options.size(); ++j) {
+    if (terminal_state(TK_MOUSE_Y) == 1 + j && terminal_state(TK_MOUSE_X) >= start_x 
+    && terminal_state(TK_MOUSE_X) < start_x + dropdown->getDropdownWidth()
+    && dropdown->options[j].callback_f != nullptr) {
+      dropdown->options[j].callback_f(editorData);
+      return_value = true;
+    }
+  }
+  return return_value;
+}
+
+bool handleInputMenuBar(EditorData *editorData, int key, Size term_size) {
+  bool return_value = false;
+  bool mouse_y_on_bar = terminal_state(TK_MOUSE_Y) == 0;
+  int mouse_x = terminal_state(TK_MOUSE_X);
+  int cur_x = 0;
+  if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
+    if (editorData->menuBar.clicked_opt != -1) {
+      return_value = clickedMenuBarDropdown(editorData, term_size);
+    }
+    for (int i = 0; i < editorData->menuBar.options.size(); ++i) {
+      if (mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + editorData->menuBar.options[i].name.length()) {
+        editorData->menuBar.clicked_opt = i;
+        return true;
+      }
+      else
+        editorData->menuBar.clicked_opt = -1;
+      cur_x += editorData->menuBar.options[i].name.length() + 1;
+    }
+  }
+  return return_value;
+}
+
+// ACTIONS
+
+void NewFile(EditorData *editorData) {
+  editorData->buffers.textBuffers.push_back({"New " + std::to_string(next_file), {0, 0}, {0, 2}, 0, 0, ""});
+  ++next_file;
+  editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
+}
+
+void CloseFile(EditorData *editorData) {
+  editorData->buffers.textBuffers.erase(editorData->buffers.textBuffers.begin() + editorData->buffers.cur, 
+                                        editorData->buffers.textBuffers.begin() + editorData->buffers.cur + 1);
+  ++editorData->buffers.cur;
+  if (editorData->buffers.cur >= editorData->buffers.textBuffers.size()) {
+    editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
+  }
+  if (editorData->buffers.cur < 0) {
+    editorData->buffers.cur = 0;
+  }
+}
+
 // PROGRAM
 
 void init() {
@@ -374,8 +441,8 @@ void handleInput(Size term_size) {
   int key = terminal_read();
   if (key == TK_CLOSE)
     editorData.running = false;
-  handleInputMenuBar(&(editorData.menuBar), key, term_size);
-  handleInputBufferList(&(editorData.buffers), key, term_size);
+  if (!handleInputMenuBar(&editorData, key, term_size))
+    handleInputBufferList(&(editorData.buffers), key, term_size);
 }
 
 void update(Size term_size) {

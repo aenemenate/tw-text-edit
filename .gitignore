@@ -2,3 +2,5 @@
 *.pdb
 *.obj
 *.txt
+
+bin/.vs
