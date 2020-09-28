@@ -23,6 +23,8 @@ enum Direction { Up, Down, Left, Right };
 // ACTIONS
 
 void NewFile(EditorData*);
+void GetOpenFile(EditorData*);
+void OpenFile(string name, EditorData*);
 void CloseFile(EditorData*);
 
 // COLOR PALETTE
@@ -140,7 +142,7 @@ int TextBuffer::findNewline(int n) {
   return 0;
 }
 
-void handleInputTextBuffer(TextBuffer *buf, int key, Size size) {
+bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escapes) {
   switch (key) {
       case (TK_RIGHT):
         buf->moveCaret(Direction::Right, size);
@@ -156,6 +158,7 @@ void handleInputTextBuffer(TextBuffer *buf, int key, Size size) {
         break;
   }
   if (key == TK_RETURN || key == TK_ENTER || key == TK_KP_ENTER) {
+    if (enter_escapes) return true;
 // No distinction between confirmation and interruption
     string first_half = buf->buffer.substr(0, buf->caret_pos);
     string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length()+1 - buf->caret_pos);
@@ -179,6 +182,7 @@ void handleInputTextBuffer(TextBuffer *buf, int key, Size size) {
     buf->moveCaret(Direction::Right, size);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
+  return false;
 }
 
 void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size) {
@@ -226,12 +230,12 @@ struct MenuBar {
 
 void buildMenuBar(MenuBar *menuBar) {
   menuBar->clicked_opt = -1;
-  menuBar->options.push_back({"File", {{"New   (Ctrl + N)", NewFile}, {"Open  (Ctrl + O)", nullptr}, {"Save  (Ctrl + S)", nullptr}, {"Close (Ctrl + C)", CloseFile}}});
+  menuBar->options.push_back({"File", {{"New   (Ctrl + N)", NewFile}, {"Open  (Ctrl + O)", GetOpenFile}, {"Save  (Ctrl + S)", nullptr}, {"Close (Ctrl + C)", CloseFile}}});
   menuBar->options.push_back({"Edit", {{"Undo  (Ctrl + U)", nullptr}, {"Redo  (Ctrl + R)", nullptr}, {"Cut   (Ctrl + X)", nullptr}, {"Copy  (Ctrl + C)", nullptr}, {"Paste (Ctrl + V)", nullptr}, {"Find  (Ctrl + F)", nullptr}}});
   menuBar->options.push_back({"Options", {{"Settings (Ctrl + P)", nullptr}/*, "Commands (Ctrl + M)"*/}});
 }
 
-void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size term_size) {
+void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size termSize) {
   terminal_color(colorPalette->menuBarDropdownColor.fg.c_str());
   terminal_bkcolor(colorPalette->menuBarDropdownColor.bg.c_str());
   int start_x = 0;
@@ -254,11 +258,11 @@ void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size term
   }
 }
 
-void drawMenuBar(MenuBar *menuBar, ColorPalette *colorPalette, Size term_size) {
+void drawMenuBar(MenuBar *menuBar, ColorPalette *colorPalette, Size termSize) {
   terminal_color(colorPalette->menuBarColor.fg.c_str());
   terminal_bkcolor(colorPalette->menuBarColor.bg.c_str());
 // bar bg
-  for (int i = 0; i < term_size.width; ++i)
+  for (int i = 0; i < termSize.width; ++i)
     terminal_put(i, 0, ' ');
 // options
   int cur_x = 0;
@@ -276,7 +280,7 @@ void drawMenuBar(MenuBar *menuBar, ColorPalette *colorPalette, Size term_size) {
   }
 // dropdown
   if (menuBar->clicked_opt != -1) {
-      drawMenuBarDropdown(menuBar, colorPalette, term_size);
+      drawMenuBarDropdown(menuBar, colorPalette, termSize);
   }
   // set colors back to defaults
   terminal_color(colorPalette->workspaceDefaultColor.fg.c_str());
@@ -295,7 +299,7 @@ void buildBufferList(BufferList *bufferList) {
   bufferList->textBuffers.push_back({"New 1", {0, 0}, {0, 2}, 0, 0, ""});
 }
 
-void handleInputBufferList(BufferList *bufferList, int key, Size term_size) {
+void handleInputBufferList(BufferList *bufferList, int key, Size termSize) {
 // if buffer clicked, switch to it
   bool mouse_y_on_bar = terminal_state(TK_MOUSE_Y) == 1;
   int mouse_x = terminal_state(TK_MOUSE_X);
@@ -311,22 +315,18 @@ void handleInputBufferList(BufferList *bufferList, int key, Size term_size) {
   }
 // if buffer clicked, go to it
   TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
-  handleInputTextBuffer(currentBuffer, key, {term_size.width, term_size.height - currentBuffer->pos.y});
+  handleInputTextBuffer(currentBuffer, key, {termSize.width, termSize.height - currentBuffer->pos.y}, false);
 }
 
-void updateBufferList(BufferList *bufferList, Size term_size) {
-// if buffer saved, update it
-}
-
-void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size term_size) {
+void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size termSize) {
 // draw cur buffer from y 2
   TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
-  drawTextBuffer(currentBuffer, colorPalette, {term_size.width, term_size.height - currentBuffer->pos.y});
+  drawTextBuffer(currentBuffer, colorPalette, {termSize.width, termSize.height - currentBuffer->pos.y});
 // draw buffer list at y 1
   terminal_color(colorPalette->bufferListColor.fg.c_str());
   terminal_bkcolor(colorPalette->bufferListColor.bg.c_str());
 // bar bg
-  for (int i = 0; i < term_size.width; ++i)
+  for (int i = 0; i < termSize.width; ++i)
     terminal_put(i, 1, ' ');
 // options
   int cur_x = 0;
@@ -347,6 +347,32 @@ void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size ter
   }
 }
 
+// Text Input Dropdown
+
+enum TextAction {
+  Open,
+  Save,
+  Find,
+  FindAndReplace
+};
+
+struct TextDropdown {
+  TextBuffer inputBuffer;
+  TextAction action;
+  bool showing;
+};
+
+void buildTextDropdown(TextDropdown *textDropdown, Size termSize) {
+  textDropdown->inputBuffer = {"", {0, 0}, {std::max(0, termSize.width - 20), 1}, 0, 0, ""};
+  textDropdown->showing = false;
+}
+
+void drawTextDropdown(TextDropdown *textDropdown, ColorPalette *colorPalette, Size termSize) {
+  if (textDropdown->showing) {
+    drawTextBuffer(&(textDropdown->inputBuffer), colorPalette, {20, 1});
+  }
+}
+
 // GLOBALS
 
 int next_file = 2;
@@ -356,19 +382,23 @@ struct EditorData {
   ColorPalette colorPalette;
   BufferList buffers;
   MenuBar menuBar;
+  TextDropdown textDropdown;
 };
 
 EditorData editorData;
 
 void buildEditorData(EditorData *editorData) {
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
   editorData->running = true;
   buildMenuBar(&(editorData->menuBar));
   buildBufferList(&(editorData->buffers));
   buildColorPalette(&(editorData->colorPalette));
+  buildTextDropdown(&(editorData->textDropdown), termSize);
 }
 
-// click menu bar options
-bool clickedMenuBarDropdown(EditorData* editorData, Size term_size) {
+
+
+bool clickedMenuBarDropdown(EditorData* editorData, Size termSize) {
   bool return_value = false;
   int start_x = 0;
   for (int i = 0; i < editorData->menuBar.clicked_opt; ++i) {
@@ -386,14 +416,14 @@ bool clickedMenuBarDropdown(EditorData* editorData, Size term_size) {
   return return_value;
 }
 
-bool handleInputMenuBar(EditorData *editorData, int key, Size term_size) {
+bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
   bool return_value = false;
   bool mouse_y_on_bar = terminal_state(TK_MOUSE_Y) == 0;
   int mouse_x = terminal_state(TK_MOUSE_X);
   int cur_x = 0;
   if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
     if (editorData->menuBar.clicked_opt != -1) {
-      return_value = clickedMenuBarDropdown(editorData, term_size);
+      return_value = clickedMenuBarDropdown(editorData, termSize);
     }
     for (int i = 0; i < editorData->menuBar.options.size(); ++i) {
       if (mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + editorData->menuBar.options[i].name.length()) {
@@ -408,12 +438,52 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size term_size) {
   return return_value;
 }
 
+bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
+  if (editorData->textDropdown.showing) {
+    bool finished = handleInputTextBuffer(&(editorData->textDropdown.inputBuffer), key, {20, 1}, true);
+    if (finished) {
+      editorData->textDropdown.showing = false;
+      switch (editorData->textDropdown.action) {
+        case TextAction::Open:
+          // open file entered by user
+          OpenFile(editorData->textDropdown.inputBuffer.buffer, editorData);
+          break;
+        case TextAction::Save:
+          // save file as entered by user
+          break;
+        case TextAction::Find:
+          // highlight found text, then enter mode where user can press left and right to jump to instances
+          break;
+        case TextAction::FindAndReplace:
+          // prompt for replace text
+          break;
+      }
+      return true;
+    }
+    // print any extra necessary text
+  }
+  return editorData->textDropdown.showing;
+}
+
 // ACTIONS
 
 void NewFile(EditorData *editorData) {
   editorData->buffers.textBuffers.push_back({"New " + std::to_string(next_file), {0, 0}, {0, 2}, 0, 0, ""});
   ++next_file;
   editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
+}
+
+void GetOpenFile(EditorData *editorData) {
+  editorData->textDropdown.showing = true;
+  editorData->textDropdown.action = TextAction::Open;
+  editorData->textDropdown.inputBuffer.buffer = "";
+  editorData->textDropdown.inputBuffer.caret_pos = 0;
+  editorData->textDropdown.inputBuffer.cached_x_pos = 0;
+  editorData->textDropdown.inputBuffer.offs = {0, 0};
+}
+
+void OpenFile(string name, EditorData *editorData) {
+  // open file from file location and put it in a new buffer
 }
 
 void CloseFile(EditorData *editorData) {
@@ -437,35 +507,35 @@ void init() {
   buildEditorData(&editorData);
 }
 
-void handleInput(Size term_size) {
+void handleInput(Size termSize) {
   int key = terminal_read();
   if (key == TK_CLOSE)
     editorData.running = false;
-  if (!handleInputMenuBar(&editorData, key, term_size))
-    handleInputBufferList(&(editorData.buffers), key, term_size);
+  if (!handleInputMenuBar(&editorData, key, termSize) && !handleInputTextDropdown(&editorData, key, termSize))
+    handleInputBufferList(&(editorData.buffers), key, termSize);
 }
 
-void update(Size term_size) {
-  updateBufferList(&(editorData.buffers), term_size);
+void update(Size termSize) {
 }
 
-void draw(Size term_size) {
+void draw(Size termSize) {
   terminal_clear();
   // draw buffer first so that menus and things will appear on top of it
-  drawBufferList(&(editorData.buffers), &(editorData.colorPalette), term_size);
-  drawMenuBar(&(editorData.menuBar), &(editorData.colorPalette), term_size);
+  drawBufferList(&(editorData.buffers), &(editorData.colorPalette), termSize);
+  drawMenuBar(&(editorData.menuBar), &(editorData.colorPalette), termSize);
+  drawTextDropdown(&(editorData.textDropdown), &(editorData.colorPalette), termSize);
   terminal_refresh();
 }
 
 int WinMain() {
   init();
-  Size term_size = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
-  draw(term_size);
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+  draw(termSize);
   while ((editorData.running)) {
-    term_size = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
-    update(term_size);
-    draw(term_size);
-    handleInput(term_size);
+    termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+    update(termSize);
+    draw(termSize);
+    handleInput(termSize);
   }
   terminal_close();
 }
