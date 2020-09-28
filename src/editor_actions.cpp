@@ -27,14 +27,23 @@ void OpenFile(std::string name, EditorData *editorData) {
 
 void SaveFile(EditorData *editorData) {
   TextBuffer curFile = editorData->buffers.textBuffers[editorData->buffers.cur];
-  if (curFile.name != "") {
-    if (curFile.filepath != "") {
-      std::filesystem::path filename = std::filesystem::path(curFile.filepath + '\\' + curFile.name);
-      std::ofstream out(filename);
-      out << curFile.buffer;
-      out.close();
-    }
+  if (curFile.name != "" && curFile.filepath != "") {
+    std::filesystem::path filename = std::filesystem::path(curFile.filepath + '\\' + curFile.name);
+    std::ofstream out(filename);
+    out << curFile.buffer;
+    out.close();
   }
+  else {
+    editorData->textDropdown.showing = true;
+    editorData->textDropdown.action = TextAction::Save;
+    resetTextDropdown(&(editorData->textDropdown));
+  }
+}
+
+void SaveFileAs(EditorData *editorData) {
+  editorData->textDropdown.showing = true;
+  editorData->textDropdown.action = TextAction::Save;
+  resetTextDropdown(&(editorData->textDropdown));
 }
 
 void CloseFile(EditorData *editorData) {
