@@ -3,10 +3,31 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#define string       std::string
-#define vector       std::vector
+#include <filesystem>
+#include <fstream>
+
+#define vector std::vector
+#define NOMINMAX
+
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 
 struct EditorData;
+
+bool isNotAllSpaces(std::string str) {
+  if (str.size() == 0)
+    return false;
+  for (int i = 0; i < str.length(); ++i) {
+    if (str[i] != ' ')
+      return true;
+  }
+  return false;
+}
 
 // Data types
 
@@ -24,13 +45,13 @@ enum Direction { Up, Down, Left, Right };
 
 void NewFile(EditorData*);
 void GetOpenFile(EditorData*);
-void OpenFile(string name, EditorData*);
+void OpenFile(std::string name, EditorData*);
 void CloseFile(EditorData*);
 
 // COLOR PALETTE
 
 struct Color {
-  string fg, bg;
+  std::string fg, bg;
 };
 
 struct ColorPalette {
@@ -58,12 +79,12 @@ void buildColorPalette(ColorPalette *colorPalette) {
 // TEXT BUFFER
 
 struct TextBuffer {
-  string name;
+  std::string name;
   Point offs;
   Point pos;
   int cached_x_pos;
   int caret_pos;
-  string buffer;
+  std::string buffer;
   void moveCaret(Direction dir, Size size);
   Point getCaretPos();
   int findNewline(int n);
@@ -88,19 +109,19 @@ void TextBuffer::moveCaret(Direction dir, Size size) {
       break;
     case Direction::Up:
       temp_pos = getCaretPos();
-      caret_pos_temp = findNewline(std::max(0, temp_pos.y-1));
+      caret_pos_temp = findNewline(max(0, temp_pos.y-1));
       caret_pos = caret_pos_temp + cached_x_pos;
       caret_pos_check = getCaretPos();
-      if (caret_pos_check.y != std::max(0, temp_pos.y-1))
-        caret_pos = findNewline(std::max(0, temp_pos.y))-1;
+      if (caret_pos_check.y != max(0, temp_pos.y-1))
+        caret_pos = findNewline(max(0, temp_pos.y))-1;
       break;
     case Direction::Down:
       temp_pos = getCaretPos();
       caret_pos_temp = findNewline(temp_pos.y+1);
       caret_pos = caret_pos_temp + cached_x_pos;
       caret_pos_check = getCaretPos();
-      if (caret_pos != buffer.length() && caret_pos_check.y != std::max(0, temp_pos.y+1)) {
-        caret_pos = findNewline(std::max(0, temp_pos.y+2))-1;
+      if (caret_pos != buffer.length() && caret_pos_check.y != max(0, temp_pos.y+1)) {
+        caret_pos = findNewline(max(0, temp_pos.y+2))-1;
       }
       if (caret_pos <= 0) {
         caret_pos = buffer.length();
@@ -160,24 +181,24 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escap
   if (key == TK_RETURN || key == TK_ENTER || key == TK_KP_ENTER) {
     if (enter_escapes) return true;
 // No distinction between confirmation and interruption
-    string first_half = buf->buffer.substr(0, buf->caret_pos);
-    string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length()+1 - buf->caret_pos);
+    std::string first_half = buf->buffer.substr(0, buf->caret_pos);
+    std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + "\n" + second_half;
     buf->moveCaret(Direction::Right, size);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
   else if (key == TK_BACKSPACE && buf->buffer.length() > 0) {
 // Remove one character
-    string first_half = buf->buffer.substr(0, std::max(0, buf->caret_pos-1));
-    string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length()+1 - buf->caret_pos);
+    std::string first_half = buf->buffer.substr(0, max(0, buf->caret_pos-1));
+    std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + second_half;
     buf->moveCaret(Direction::Left, size);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
   else if (terminal_check(TK_WCHAR)) {
 // Append one character
-    string first_half = buf->buffer.substr(0, buf->caret_pos);
-    string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length()+1 - buf->caret_pos);
+    std::string first_half = buf->buffer.substr(0, buf->caret_pos);
+    std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + (char)terminal_state(TK_WCHAR) + second_half;
     buf->moveCaret(Direction::Right, size);
     buf->cached_x_pos = buf->getCaretPos().x;
@@ -199,17 +220,20 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size) {
   Point caret_pos = buf->getCaretPos();
   char prev_char = terminal_pick(buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y);
   terminal_put(buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y, prev_char);
+
+  terminal_color(colorPalette->workspaceDefaultColor.fg.c_str());
+  terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
 }
 
 // MENU BAR
 
 struct MenuFunction {
-  string name;
+  std::string name;
   void (*callback_f)(EditorData*);
 };
 
 struct MenuDropdown {
-  string name;
+  std::string name;
   vector<MenuFunction> options;
   int getDropdownWidth();
 };
@@ -363,13 +387,29 @@ struct TextDropdown {
 };
 
 void buildTextDropdown(TextDropdown *textDropdown, Size termSize) {
-  textDropdown->inputBuffer = {"", {0, 0}, {std::max(0, termSize.width - 20), 1}, 0, 0, ""};
+  textDropdown->inputBuffer = {"", {0, 0}, {max(0, termSize.width - 30), 1}, 0, 0, ""};
   textDropdown->showing = false;
 }
 
-void drawTextDropdown(TextDropdown *textDropdown, ColorPalette *colorPalette, Size termSize) {
+void resetTextDropdown(TextDropdown *textDropdown) {
+  textDropdown->inputBuffer.buffer = "";
+  textDropdown->inputBuffer.caret_pos = 0;
+  textDropdown->inputBuffer.cached_x_pos = 0;
+  textDropdown->inputBuffer.offs = {0, 0};
+}
+
+void drawTextDropdown(TextDropdown *textDropdown, std::string workingDirectory, ColorPalette *colorPalette, Size termSize) {
   if (textDropdown->showing) {
-    drawTextBuffer(&(textDropdown->inputBuffer), colorPalette, {20, 1});
+    drawTextBuffer(&(textDropdown->inputBuffer), colorPalette, {30, 1});
+    if (textDropdown->action == TextAction::Open) {
+      int x_pos = max(0, termSize.width - 30);
+      terminal_print(min(x_pos, termSize.width - workingDirectory.length()),0,workingDirectory.c_str());
+      int i = 1;
+      for (const auto & entry : std::filesystem::directory_iterator(workingDirectory)) {
+        terminal_print(x_pos,1+i, entry.path().filename().string().c_str());
+        ++i;
+      }
+    }
   }
 }
 
@@ -379,6 +419,7 @@ int next_file = 2;
 
 struct EditorData {
   bool running;
+  std::string workingDirectory;
   ColorPalette colorPalette;
   BufferList buffers;
   MenuBar menuBar;
@@ -390,6 +431,7 @@ EditorData editorData;
 void buildEditorData(EditorData *editorData) {
   Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
   editorData->running = true;
+  editorData->workingDirectory = "C:";
   buildMenuBar(&(editorData->menuBar));
   buildBufferList(&(editorData->buffers));
   buildColorPalette(&(editorData->colorPalette));
@@ -440,13 +482,31 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
 
 bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
   if (editorData->textDropdown.showing) {
-    bool finished = handleInputTextBuffer(&(editorData->textDropdown.inputBuffer), key, {20, 1}, true);
+    bool finished = handleInputTextBuffer(&(editorData->textDropdown.inputBuffer), key, {30, 1}, true);
     if (finished) {
       editorData->textDropdown.showing = false;
+      std::string filename;
+      std::string inputText = editorData->textDropdown.inputBuffer.buffer;
       switch (editorData->textDropdown.action) {
         case TextAction::Open:
-          // open file entered by user
-          OpenFile(editorData->textDropdown.inputBuffer.buffer, editorData);
+          filename = editorData->workingDirectory + "\\" + inputText;
+          if (inputText != "" && inputText != "." && isNotAllSpaces(inputText) && std::filesystem::exists(filename)) {
+            if (inputText == "../" || inputText == "..") {
+              editorData->workingDirectory = std::filesystem::path(editorData->workingDirectory).parent_path().string();
+              if (editorData->workingDirectory[editorData->workingDirectory.length()-1] == '\\')
+                editorData->workingDirectory = editorData->workingDirectory.substr(0, editorData->workingDirectory.length() - 1);
+              editorData->textDropdown.showing = true;
+              resetTextDropdown(&(editorData->textDropdown));
+            }
+            else if (std::filesystem::is_directory(filename)) {
+              editorData->workingDirectory = filename;
+              editorData->textDropdown.showing = true;
+              resetTextDropdown(&(editorData->textDropdown));
+            }
+            else {
+              OpenFile(editorData->workingDirectory + "\\" + editorData->textDropdown.inputBuffer.buffer, editorData);
+            }
+          }
           break;
         case TextAction::Save:
           // save file as entered by user
@@ -476,14 +536,17 @@ void NewFile(EditorData *editorData) {
 void GetOpenFile(EditorData *editorData) {
   editorData->textDropdown.showing = true;
   editorData->textDropdown.action = TextAction::Open;
-  editorData->textDropdown.inputBuffer.buffer = "";
-  editorData->textDropdown.inputBuffer.caret_pos = 0;
-  editorData->textDropdown.inputBuffer.cached_x_pos = 0;
-  editorData->textDropdown.inputBuffer.offs = {0, 0};
+  resetTextDropdown(&(editorData->textDropdown));
 }
 
-void OpenFile(string name, EditorData *editorData) {
-  // open file from file location and put it in a new buffer
+void OpenFile(std::string name, EditorData *editorData) {
+  std::filesystem::path filename = std::filesystem::path(name);
+  std::ifstream filestream(name);
+  std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
+  if (filename.has_filename()) {
+    editorData->buffers.textBuffers.push_back({filename.filename().string(), {0, 0}, {0, 2}, 0, 0, file});
+    editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
+  }
 }
 
 void CloseFile(EditorData *editorData) {
@@ -511,7 +574,8 @@ void handleInput(Size termSize) {
   int key = terminal_read();
   if (key == TK_CLOSE)
     editorData.running = false;
-  if (!handleInputMenuBar(&editorData, key, termSize) && !handleInputTextDropdown(&editorData, key, termSize))
+  if (!handleInputMenuBar(&editorData, key, termSize) 
+  &&  !handleInputTextDropdown(&editorData, key, termSize))
     handleInputBufferList(&(editorData.buffers), key, termSize);
 }
 
@@ -520,10 +584,9 @@ void update(Size termSize) {
 
 void draw(Size termSize) {
   terminal_clear();
-  // draw buffer first so that menus and things will appear on top of it
   drawBufferList(&(editorData.buffers), &(editorData.colorPalette), termSize);
   drawMenuBar(&(editorData.menuBar), &(editorData.colorPalette), termSize);
-  drawTextDropdown(&(editorData.textDropdown), &(editorData.colorPalette), termSize);
+  drawTextDropdown(&(editorData.textDropdown), editorData.workingDirectory + "\\", &(editorData.colorPalette), termSize);
   terminal_refresh();
 }
 
@@ -532,7 +595,13 @@ int WinMain() {
   Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
   draw(termSize);
   while ((editorData.running)) {
-    termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+    if (terminal_state(TK_WIDTH) != termSize.width
+    ||  terminal_state(TK_HEIGHT) != termSize.height) {
+      termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+      bool showing = editorData.textDropdown.showing;
+      buildTextDropdown(&(editorData.textDropdown), termSize);
+      editorData.textDropdown.showing = showing;
+    }
     update(termSize);
     draw(termSize);
     handleInput(termSize);
