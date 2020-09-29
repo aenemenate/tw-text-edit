@@ -41,7 +41,7 @@ void draw(Size termSize) {
   terminal_clear();
   drawBufferList(&(editorData.buffers), &(editorData.colorPalette), termSize);
   drawMenuBar(&(editorData.menuBar), &(editorData.colorPalette), termSize);
-  drawTextDropdown(&(editorData.textDropdown), editorData.workingDirectory + "\\", &(editorData.colorPalette), termSize);
+  drawTextDropdown(&(editorData.textDropdown), &(editorData.workingDirectory) , &(editorData.colorPalette), termSize);
   terminal_refresh();
 }
 
@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
   init(filename);
   Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
   draw(termSize);
+  filename.clear();
   while ((editorData.running)) {
     if (terminal_state(TK_WIDTH) != termSize.width
     ||  terminal_state(TK_HEIGHT) != termSize.height) {

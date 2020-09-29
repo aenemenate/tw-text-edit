@@ -27,28 +27,40 @@ void resetTextDropdown(TextDropdown *textDropdown) {
   textDropdown->inputBuffer.offs = {0, 0};
 }
 
-void drawTextDropdown(TextDropdown *textDropdown, std::string workingDirectory, ColorPalette *colorPalette, Size termSize) {
+void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, ColorPalette *colorPalette, Size termSize) {
   if (textDropdown->showing) {
     drawTextBuffer(&(textDropdown->inputBuffer), colorPalette, {30, 1});
     if (textDropdown->action == TextAction::Open || textDropdown->action == TextAction::Save) {
       int x_pos = max(0, termSize.width - 30);
-      terminal_print(min(x_pos, termSize.width - workingDirectory.length()),0,workingDirectory.c_str());
+      terminal_print(min(x_pos, termSize.width - workingDirectory->length()),0,workingDirectory->c_str());
       int i = 1;
-      for (const auto & entry : std::filesystem::directory_iterator(workingDirectory)) {
-        std::string entry_name = entry.path().filename().string();
-        if (entry.is_directory()) {
-          terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
-          terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{'\\' + entry_name}.c_str());
-          ++i;
+      try {
+        for (const auto & entry : std::filesystem::directory_iterator(*workingDirectory + '\\')) {
+          std::string entry_name = entry.path().filename().string();
+          try {
+            using std::filesystem::directory_iterator;
+            directory_iterator(entry.path().string() + '\\');
+          }
+          catch (std::filesystem::filesystem_error ex) {
+            continue;
+          }
+          if (entry.is_directory()) {
+            terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
+            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{'\\' + entry_name}.c_str());
+            ++i;
+          }
+        }
+        for (const auto & entry : std::filesystem::directory_iterator(*workingDirectory + '\\')) {
+          std::string entry_name = entry.path().filename().string();
+          if (!entry.is_directory()) {
+            terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
+            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{entry_name}.c_str());
+            ++i;
+          }
         }
       }
-      for (const auto & entry : std::filesystem::directory_iterator(workingDirectory)) {
-        std::string entry_name = entry.path().filename().string();
-        if (!entry.is_directory()) {
-          terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
-          terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{entry_name}.c_str());
-          ++i;
-        }
+      catch (std::filesystem::filesystem_error _ex) {
+        *workingDirectory = std::filesystem::path(*workingDirectory).parent_path().string();
       }
     }
   }
@@ -74,8 +86,6 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
             if (std::filesystem::exists(filename)) {
               if (inputText == "..") {
                 editorData->workingDirectory = std::filesystem::path(editorData->workingDirectory).parent_path().string();
-                if (editorData->workingDirectory[editorData->workingDirectory.length()-1] == '\\')
-                  editorData->workingDirectory = editorData->workingDirectory.substr(0, editorData->workingDirectory.length() - 1);
                 editorData->textDropdown.showing = true;
                 resetTextDropdown(&(editorData->textDropdown));
               }
@@ -114,6 +124,8 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
           // prompt for replace text
           break;
       }
+      if (editorData->workingDirectory.back() == '\\')
+        editorData->workingDirectory = editorData->workingDirectory.substr(0, editorData->workingDirectory.length() - 1);
       return true;
     }
     // print any extra necessary text
