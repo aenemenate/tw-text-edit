@@ -84,7 +84,7 @@ int TextBuffer::findNewline(int n) {
 }
 
 bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escapes) {
-  if (terminal_state(TK_ALT) || terminal_state(TK_CONTROL))
+  if (terminal_state(TK_CONTROL))
     return false;
   switch (key) {
       case (TK_RIGHT):

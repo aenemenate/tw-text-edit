@@ -14,7 +14,7 @@ int MenuDropdown::getDropdownWidth() {
 
 void buildMenuBar(MenuBar *menuBar) {
   menuBar->clicked_opt = -1;
-  menuBar->options.push_back({"File", {{"New     (Ctrl + N)", NewFile}, {"Open    (Ctrl + O)", GetOpenFile}, {"Save    (Ctrl + S)", SaveFile},  {"Save As (Alt  + S)", SaveFileAs}, {"Close   (Ctrl + C)", CloseFile}}});
+  menuBar->options.push_back({"File", {{"New           (Ctrl+N)", NewFile}, {"Open          (Ctrl+O)", GetOpenFile}, {"Save          (Ctrl+S)", SaveFile},  {"Save As (Ctrl+Shift+S)", SaveFileAs}, {"Close         (Ctrl+C)", CloseFile}}});
   menuBar->options.push_back({"Edit", {{"Undo  (Ctrl + U)", nullptr}, {"Redo  (Ctrl + R)", nullptr}, {"Cut   (Ctrl + X)", nullptr}, {"Copy  (Ctrl + C)", nullptr}, {"Paste (Ctrl + V)", nullptr}, {"Find  (Ctrl + F)", nullptr}}});
   menuBar->options.push_back({"Options", {{"Settings (Ctrl + P)", nullptr}/*, "Commands (Ctrl + M)"*/}});
 }
@@ -109,27 +109,18 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
     }
   }
   if (terminal_check(TK_CONTROL)) {
-    switch (key) {
-      case TK_N:
+      if (key == TK_N)
         NewFile(editorData);
-        break;
-      case TK_O:
+      else if (key == TK_O)
         GetOpenFile(editorData);
-        break;
-      case TK_S:
-        SaveFile(editorData);
-        break;
-      case TK_C:
+      else if (key == TK_S) {
+        if (terminal_check(TK_SHIFT))
+          SaveFileAs(editorData);
+        else
+          SaveFile(editorData);
+      }
+      else if (key == TK_C)
         CloseFile(editorData);
-        break;
-    }
-  }
-  if (terminal_check(TK_ALT)) {
-    switch (key) {
-      case TK_S:
-        SaveFileAs(editorData);
-        break;
-    }
   }
   return return_value;
 }
