@@ -43,6 +43,8 @@ void TextBuffer::moveCaret(Direction dir, Size size) {
       caret_pos_check = getCaretPos();
       if (caret_pos_check.y != max(0, temp_pos.y-1))
         caret_pos = findNewline(max(0, temp_pos.y))-1;
+      if (caret_pos < 0)
+        caret_pos = 0;
       break;
     case Direction::Down:
       temp_pos = getCaretPos();

@@ -1,15 +1,26 @@
+
+#define _AMD64_
+
 #include "../include/BearLibTerminal.h"
+
+#include <windows.h>
+#include <string>
+#include <iostream>
 
 #include "editor_data.h"
 #include "base_types.h"
+#include "editor_actions.h"
 
 EditorData editorData;
 
-void init() {
+void init(std::string fileName) {
   terminal_open();
   terminal_set("window.size=60x40");
   terminal_refresh();
   buildEditorData(&editorData);
+  if (fileName != "") {
+    OpenFile(fileName, &editorData);
+  }
 }
 
 void handleInput(Size termSize) {
@@ -32,8 +43,14 @@ void draw(Size termSize) {
   terminal_refresh();
 }
 
-int WinMain() {
-  init();
+int main(int argc, char *argv[]) {
+  FreeConsole();
+// get command line arg arg 1 is 
+  std::string filename = "";
+  if (argc > 1)
+    filename = argv[1];
+
+  init(filename);
   Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
   draw(termSize);
   while ((editorData.running)) {
@@ -49,4 +66,5 @@ int WinMain() {
     handleInput(termSize);
   }
   terminal_close();
+  return 0;
 }
