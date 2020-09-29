@@ -6,6 +6,18 @@
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
+void caretSeek(int amount, TextBuffer *textBuffer) {
+  int caret_pos = textBuffer->caret_pos;
+  int x = 0;
+  for (int i = 0; i < amount; ++x) {
+    if (textBuffer->buffer[caret_pos + x] == '\t') {
+      i += 8 - textBuffer->getCaretPos().x % 8;
+    }
+    else ++i;
+    textBuffer->caret_pos++;
+  }
+}
+
 void TextBuffer::moveCaret(Direction dir, Size size) {
   Point temp_pos;
   Point caret_pos_check;
@@ -26,7 +38,8 @@ void TextBuffer::moveCaret(Direction dir, Size size) {
     case Direction::Up:
       temp_pos = getCaretPos();
       caret_pos_temp = findNewline(max(0, temp_pos.y-1));
-      caret_pos = caret_pos_temp + cached_x_pos;
+      caret_pos = caret_pos_temp;
+      caretSeek(cached_x_pos, this);
       caret_pos_check = getCaretPos();
       if (caret_pos_check.y != max(0, temp_pos.y-1))
         caret_pos = findNewline(max(0, temp_pos.y))-1;
@@ -34,7 +47,8 @@ void TextBuffer::moveCaret(Direction dir, Size size) {
     case Direction::Down:
       temp_pos = getCaretPos();
       caret_pos_temp = findNewline(temp_pos.y+1);
-      caret_pos = caret_pos_temp + cached_x_pos;
+      caret_pos = caret_pos_temp;
+      caretSeek(cached_x_pos, this);
       caret_pos_check = getCaretPos();
       if (caret_pos != buffer.length() && caret_pos_check.y != max(0, temp_pos.y+1)) {
         caret_pos = findNewline(max(0, temp_pos.y+2))-1;

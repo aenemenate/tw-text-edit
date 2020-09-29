@@ -23,6 +23,7 @@ void OpenFile(std::string name, EditorData *editorData) {
   std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
   editorData->buffers.textBuffers.push_back({filename.filename().string(), filename.parent_path().string(), {0, 0}, {0, 2}, 0, 0, file});
   editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
+  filestream.close();
 }
 
 void SaveFile(EditorData *editorData) {
