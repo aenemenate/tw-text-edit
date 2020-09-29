@@ -108,5 +108,28 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
       cur_x += editorData->menuBar.options[i].name.length() + 1;
     }
   }
+  if (terminal_check(TK_CONTROL)) {
+    switch (key) {
+      case TK_N:
+        NewFile(editorData);
+        break;
+      case TK_O:
+        GetOpenFile(editorData);
+        break;
+      case TK_S:
+        SaveFile(editorData);
+        break;
+      case TK_C:
+        CloseFile(editorData);
+        break;
+    }
+  }
+  if (terminal_check(TK_ALT)) {
+    switch (key) {
+      case TK_S:
+        SaveFileAs(editorData);
+        break;
+    }
+  }
   return return_value;
 }

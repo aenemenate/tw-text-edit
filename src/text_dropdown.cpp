@@ -37,14 +37,16 @@ void drawTextDropdown(TextDropdown *textDropdown, std::string workingDirectory, 
       for (const auto & entry : std::filesystem::directory_iterator(workingDirectory)) {
         std::string entry_name = entry.path().filename().string();
         if (entry.is_directory()) {
-          terminal_print(x_pos, 1+i, std::string{'\\' + entry_name}.c_str());
+          terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
+          terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{'\\' + entry_name}.c_str());
           ++i;
         }
       }
       for (const auto & entry : std::filesystem::directory_iterator(workingDirectory)) {
         std::string entry_name = entry.path().filename().string();
         if (!entry.is_directory()) {
-          terminal_print(x_pos, 1+i, std::string{entry_name}.c_str());
+          terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
+          terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{entry_name}.c_str());
           ++i;
         }
       }

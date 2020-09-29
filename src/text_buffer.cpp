@@ -60,11 +60,15 @@ Point TextBuffer::getCaretPos() {
     for (int i = 0; i < buffer.length() + 1; ++i) {
         if (caret_pos == i)
           return pos;
-        pos.x += 1;
         if (i < buffer.length() && buffer[i] == '\n') {
-            pos.y += 1;
-            pos.x = 0;
+          pos.y += 1;
+          pos.x = 0;
         }
+        else if (i < buffer.length() && buffer[i] == '\t') {
+          pos.x += 8 - pos.x % 8;
+        }
+        else
+          pos.x += 1;
     }
   return {0,0};
 }
@@ -80,6 +84,8 @@ int TextBuffer::findNewline(int n) {
 }
 
 bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escapes) {
+  if (terminal_state(TK_ALT) || terminal_state(TK_CONTROL))
+    return false;
   switch (key) {
       case (TK_RIGHT):
         buf->moveCaret(Direction::Right, size);
@@ -100,6 +106,14 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escap
     std::string first_half = buf->buffer.substr(0, buf->caret_pos);
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + "\n" + second_half;
+    buf->moveCaret(Direction::Right, size);
+    buf->cached_x_pos = buf->getCaretPos().x;
+  }
+  else if (key == TK_TAB) {
+// No distinction between confirmation and interruption
+    std::string first_half = buf->buffer.substr(0, buf->caret_pos);
+    std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
+    buf->buffer = first_half + "\t" + second_half;
     buf->moveCaret(Direction::Right, size);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
@@ -129,7 +143,20 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size) {
     for (int j = buf->pos.y; j < buf->pos.y + size.height; ++j) {
       terminal_put(i, j, ' ');
     }
-  terminal_print(buf->pos.x + buf->offs.x, buf->pos.y + buf->offs.y, buf->buffer.c_str());
+  int y = 0;
+  int x = 0;
+  for (char c : buf->buffer) {
+    if (c != '\n' && c != '\t' && x + buf->offs.x < size.width && x + buf->offs.x >= 0 && y + buf->offs.y < size.height && y + buf->offs.y >= 0)
+      terminal_put(buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
+    if (c == '\n') {
+      y++;
+      x = 0;
+    }
+    else if (c == '\t') {
+      x += 8 - x % 8;
+    }
+    else x++;
+  }
 
   terminal_color(colorPalette->workspaceDefaultColor.bg.c_str());
   terminal_bkcolor(colorPalette->workspaceDefaultColor.fg.c_str());
