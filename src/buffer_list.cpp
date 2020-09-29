@@ -8,6 +8,8 @@ void buildBufferList(BufferList *bufferList) {
 }
 
 void handleInputBufferList(BufferList *bufferList, int key, Size termSize) {
+  if (bufferList->textBuffers.empty())
+    return;
 // if buffer clicked, switch to it
   bool mouse_y_on_bar = terminal_state(TK_MOUSE_Y) == 1;
   int mouse_x = terminal_state(TK_MOUSE_X);
@@ -27,6 +29,8 @@ void handleInputBufferList(BufferList *bufferList, int key, Size termSize) {
 }
 
 void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size termSize) {
+  if (bufferList->textBuffers.empty())
+    return;
 // draw cur buffer from y 2
   TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
   drawTextBuffer(currentBuffer, colorPalette, {termSize.width, termSize.height - currentBuffer->pos.y});

@@ -27,6 +27,8 @@ void OpenFile(std::string name, EditorData *editorData) {
 }
 
 void SaveFile(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty())
+    return;
   TextBuffer curFile = editorData->buffers.textBuffers[editorData->buffers.cur];
   if (curFile.name != "" && curFile.filepath != "") {
     std::filesystem::path filename = std::filesystem::path(curFile.filepath + '\\' + curFile.name);
@@ -42,12 +44,16 @@ void SaveFile(EditorData *editorData) {
 }
 
 void SaveFileAs(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty())
+    return;
   editorData->textDropdown.showing = true;
   editorData->textDropdown.action = TextAction::Save;
   resetTextDropdown(&(editorData->textDropdown));
 }
 
 void CloseFile(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty())
+    return;
   editorData->buffers.textBuffers.erase(editorData->buffers.textBuffers.begin() + editorData->buffers.cur, 
                                         editorData->buffers.textBuffers.begin() + editorData->buffers.cur + 1);
   ++editorData->buffers.cur;
