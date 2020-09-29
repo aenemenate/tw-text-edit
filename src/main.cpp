@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <string>
 #include <iostream>
+#include <filesystem>
 
 #include "editor_data.h"
 #include "base_types.h"
@@ -14,13 +15,14 @@
 EditorData editorData;
 
 void init(std::string fileName) {
-  terminal_open();
-  terminal_set("window.size=60x40");
-  terminal_refresh();
   buildEditorData(&editorData);
   if (fileName != "") {
     OpenFile(fileName, &editorData);
   }
+  std::filesystem::current_path(std::filesystem::path(_pgmptr).parent_path());
+  terminal_open();
+  terminal_set("window.size=60x40");
+  terminal_refresh();
 }
 
 void handleInput(Size termSize) {
@@ -45,7 +47,8 @@ void draw(Size termSize) {
 
 int main(int argc, char *argv[]) {
   FreeConsole();
-// get command line arg arg 1 is 
+
+// get command line arg, arg 1 is filename to load
   std::string filename = "";
   if (argc > 1)
     filename = argv[1];
