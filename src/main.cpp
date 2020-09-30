@@ -29,7 +29,7 @@ void handleInput(Size termSize) {
   int key = terminal_read();
   if (key == TK_CLOSE)
     editorData.running = false;
-  if (!handleInputMenuBar(&editorData, key, termSize) 
+  if (!handleInputMenuBar(&editorData, key, termSize)
   &&  !handleInputTextDropdown(&editorData, key, termSize))
     handleInputBufferList(&(editorData.buffers), key, termSize, editorData.lineNums);
 }
@@ -39,7 +39,7 @@ void update(Size termSize) {
 
 void draw(Size termSize) {
   terminal_clear();
-  drawBufferList(&(editorData.buffers), &(editorData.colorPalette), termSize, editorData.lineNums);
+  drawBufferList(&(editorData.buffers), &(editorData.colorPalette), termSize, editorData.menuBar.clicked_opt == -1, editorData.lineNums);
   drawMenuBar(&(editorData.menuBar), &(editorData.colorPalette), termSize);
   drawTextDropdown(&(editorData.textDropdown), &(editorData.workingDirectory) , &(editorData.colorPalette), termSize);
   terminal_refresh();

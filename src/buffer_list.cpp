@@ -27,7 +27,7 @@ void handleInputBufferList(BufferList *bufferList, int key, Size termSize, bool 
   handleInputTextBuffer(currentBuffer, key, {termSize.width, termSize.height - currentBuffer->pos.y}, false, lineNums);
 }
 
-void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size termSize, bool lineNums) {
+void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size termSize, bool highlight, bool lineNums) {
   if (bufferList->textBuffers.empty())
     return;
 // draw cur buffer from y 2
@@ -45,7 +45,7 @@ void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size ter
   int mouse_x = terminal_state(TK_MOUSE_X);
   for (int i = 0; i < bufferList->textBuffers.size(); ++i) {
     std::string bufferName = (bufferList->textBuffers[i].isDirty ? "* " : "") + bufferList->textBuffers[i].name;
-    if (mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + bufferName.length()) {
+    if (highlight && mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + bufferName.length()) {
       terminal_bkcolor(colorPalette->bufferListHighlightedColor.bg.c_str());
       terminal_color(colorPalette->bufferListHighlightedColor.fg.c_str());
     }
