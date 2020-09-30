@@ -8,6 +8,7 @@ void buildEditorData(EditorData *editorData) {
     termSize = {60,40};
   }
   editorData->running = true;
+  editorData->lineNums = false;
   editorData->nextFile = 2;
   editorData->workingDirectory = "C:";
   buildMenuBar(&(editorData->menuBar));

@@ -6,7 +6,7 @@ void buildBufferList(BufferList *bufferList) {
   bufferList->cur = 0;
 }
 
-void handleInputBufferList(BufferList *bufferList, int key, Size termSize) {
+void handleInputBufferList(BufferList *bufferList, int key, Size termSize, bool lineNums) {
   if (bufferList->textBuffers.empty())
     return;
 // if buffer clicked, switch to it
@@ -22,17 +22,16 @@ void handleInputBufferList(BufferList *bufferList, int key, Size termSize) {
       cur_x += bufferList->textBuffers[i].name.length() + 1;
     }
   }
-// if buffer clicked, go to it
   TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
-  handleInputTextBuffer(currentBuffer, key, {termSize.width, termSize.height - currentBuffer->pos.y}, false);
+  handleInputTextBuffer(currentBuffer, key, {termSize.width, termSize.height - currentBuffer->pos.y}, false, lineNums);
 }
 
-void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size termSize) {
+void drawBufferList(BufferList *bufferList, ColorPalette *colorPalette, Size termSize, bool lineNums) {
   if (bufferList->textBuffers.empty())
     return;
 // draw cur buffer from y 2
   TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
-  drawTextBuffer(currentBuffer, colorPalette, {termSize.width, termSize.height - currentBuffer->pos.y});
+  drawTextBuffer(currentBuffer, colorPalette, {termSize.width, termSize.height - currentBuffer->pos.y}, lineNums);
 // draw buffer list at y 1
   terminal_color(colorPalette->bufferListColor.fg.c_str());
   terminal_bkcolor(colorPalette->bufferListColor.bg.c_str());

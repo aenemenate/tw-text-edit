@@ -18,7 +18,7 @@ void caretSeek(int amount, TextBuffer *textBuffer) {
   }
 }
 
-void TextBuffer::moveCaret(Direction dir, Size size) {
+void TextBuffer::moveCaret(Direction dir, Size size, bool lineNums) {
   Point temp_pos;
   Point caret_pos_check;
   int caret_pos_temp;
@@ -63,7 +63,7 @@ void TextBuffer::moveCaret(Direction dir, Size size) {
   Point temp = getCaretPos();
   if (temp.x < std::abs(this->offs.x))
     this->offs.x = -temp.x;
-  if (temp.x >= std::abs(this->offs.x) + size.width)
+  if (temp.x >= std::abs(this->offs.x) + size.width - (lineNums ? 4 : 0))
     this->offs.x = - (temp.x - size.width)-1;
   if (temp.y < std::abs(this->offs.y))
     this->offs.y = -temp.y;
@@ -99,30 +99,30 @@ int TextBuffer::findNewline(int n) {
   return 0;
 }
 
-bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escapes) {
+bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscapes, bool lineNums) {
   if (terminal_state(TK_CONTROL))
     return false;
   switch (key) {
       case (TK_RIGHT):
-        buf->moveCaret(Direction::Right, size);
+        buf->moveCaret(Direction::Right, size, lineNums);
         break;
       case (TK_LEFT):
-        buf->moveCaret(Direction::Left, size);
+        buf->moveCaret(Direction::Left, size, lineNums);
         break;
       case (TK_DOWN):
-        buf->moveCaret(Direction::Down, size);
+        buf->moveCaret(Direction::Down, size, lineNums);
         break;
       case (TK_UP):
-        buf->moveCaret(Direction::Up, size);
+        buf->moveCaret(Direction::Up, size, lineNums);
         break;
   }
   if (key == TK_RETURN || key == TK_ENTER || key == TK_KP_ENTER) {
-    if (enter_escapes) return true;
+    if (enterEscapes) return true;
 // No distinction between confirmation and interruption
     std::string first_half = buf->buffer.substr(0, buf->caret_pos);
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + "\n" + second_half;
-    buf->moveCaret(Direction::Right, size);
+    buf->moveCaret(Direction::Right, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
   else if (key == TK_TAB) {
@@ -130,7 +130,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escap
     std::string first_half = buf->buffer.substr(0, buf->caret_pos);
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + "\t" + second_half;
-    buf->moveCaret(Direction::Right, size);
+    buf->moveCaret(Direction::Right, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
   else if (key == TK_BACKSPACE && buf->buffer.length() > 0) {
@@ -138,7 +138,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escap
     std::string first_half = buf->buffer.substr(0, max(0, buf->caret_pos-1));
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + second_half;
-    buf->moveCaret(Direction::Left, size);
+    buf->moveCaret(Direction::Left, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
   else if (terminal_check(TK_WCHAR)) {
@@ -146,13 +146,13 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enter_escap
     std::string first_half = buf->buffer.substr(0, buf->caret_pos);
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + (char)terminal_state(TK_WCHAR) + second_half;
-    buf->moveCaret(Direction::Right, size);
+    buf->moveCaret(Direction::Right, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
   }
   return false;
 }
 
-void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size) {
+void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool lineNums) {
   terminal_color(colorPalette->workspaceDefaultColor.fg.c_str());
   terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
   for (int i = buf->pos.x; i < buf->pos.x + size.width; ++i)
@@ -161,12 +161,24 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size) {
     }
   int y = 0;
   int x = 0;
+  if (lineNums) {
+    terminal_bkcolor(std::string{"dark " + colorPalette->workspaceDefaultColor.bg}.c_str());
+    terminal_clear_area(0, buf->pos.y, 4, 1);
+    terminal_print(0, buf->pos.y, std::to_string(std::abs(buf->offs.y) + 1).c_str());
+    terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
+  }
   for (char c : buf->buffer) {
-    if (c != '\n' && c != '\t' && x + buf->offs.x < size.width && x + buf->offs.x >= 0 && y + buf->offs.y < size.height && y + buf->offs.y >= 0)
-      terminal_put(buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
+    if (c != '\n' && c != '\t' && x + buf->offs.x < size.width - (lineNums ? 4 : 0) && x + buf->offs.x >= 0 && y + buf->offs.y < size.height && y + buf->offs.y >= 0)
+      terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
     if (c == '\n') {
       y++;
       x = 0;
+      if (lineNums) {
+        terminal_bkcolor(std::string{"dark " + colorPalette->workspaceDefaultColor.bg}.c_str());
+        terminal_clear_area(0, buf->pos.y + y, 4, 1);
+        terminal_print(0, buf->pos.y + y, std::to_string(std::abs(buf->offs.y) + 1 + y).c_str());
+        terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
+      }
     }
     else if (c == '\t') {
       x += 8 - x % 8;
@@ -177,8 +189,8 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size) {
   terminal_color(colorPalette->workspaceDefaultColor.bg.c_str());
   terminal_bkcolor(colorPalette->workspaceDefaultColor.fg.c_str());
   Point caret_pos = buf->getCaretPos();
-  char prev_char = terminal_pick(buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y);
-  terminal_put(buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y, prev_char);
+  char prev_char = terminal_pick((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y);
+  terminal_put((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y, prev_char);
 
   terminal_color(colorPalette->workspaceDefaultColor.fg.c_str());
   terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());

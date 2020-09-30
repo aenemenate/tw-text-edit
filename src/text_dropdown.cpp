@@ -29,7 +29,7 @@ void resetTextDropdown(TextDropdown *textDropdown) {
 
 void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, ColorPalette *colorPalette, Size termSize) {
   if (textDropdown->showing) {
-    drawTextBuffer(&(textDropdown->inputBuffer), colorPalette, {30, 1});
+    drawTextBuffer(&(textDropdown->inputBuffer), colorPalette, {30, 1}, false);
     if (textDropdown->action == TextAction::Open || textDropdown->action == TextAction::Save) {
       int x_pos = max(0, termSize.width - 30);
       terminal_print(min(x_pos, termSize.width - workingDirectory->length()),0,workingDirectory->c_str());
@@ -68,7 +68,7 @@ void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory,
 
 bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
   if (editorData->textDropdown.showing) {
-    bool finished = handleInputTextBuffer(&(editorData->textDropdown.inputBuffer), key, {30, 1}, true);
+    bool finished = handleInputTextBuffer(&(editorData->textDropdown.inputBuffer), key, {30, 1}, true, false);
     if (finished) {
       editorData->textDropdown.showing = false;
       std::string filename;

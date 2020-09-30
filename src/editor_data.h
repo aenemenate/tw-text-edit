@@ -7,6 +7,7 @@
 
 struct EditorData {
   bool running;
+  bool lineNums;
   int nextFile;
   std::string workingDirectory;
   ColorPalette colorPalette;

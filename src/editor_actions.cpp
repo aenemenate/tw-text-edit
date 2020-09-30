@@ -58,11 +58,16 @@ void CloseFile(EditorData *editorData) {
     return;
   editorData->buffers.textBuffers.erase(editorData->buffers.textBuffers.begin() + editorData->buffers.cur, 
                                         editorData->buffers.textBuffers.begin() + editorData->buffers.cur + 1);
-  ++editorData->buffers.cur;
+  editorData->buffers.cur;
   if (editorData->buffers.cur >= editorData->buffers.textBuffers.size()) {
     editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
   }
   if (editorData->buffers.cur < 0) {
     editorData->buffers.cur = 0;
   }
+}
+
+
+void ToggleLineNums(EditorData *editorData) {
+  editorData->lineNums = !editorData->lineNums;
 }
