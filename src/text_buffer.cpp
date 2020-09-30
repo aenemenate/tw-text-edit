@@ -64,7 +64,7 @@ void TextBuffer::moveCaret(Direction dir, Size size, bool lineNums) {
   if (temp.x < std::abs(this->offs.x))
     this->offs.x = -temp.x;
   if (temp.x >= std::abs(this->offs.x) + size.width - (lineNums ? 4 : 0))
-    this->offs.x = - (temp.x - size.width)-1;
+    this->offs.x = - (temp.x - size.width + (lineNums ? 4 : 0))-1;
   if (temp.y < std::abs(this->offs.y))
     this->offs.y = -temp.y;
   if (temp.y >= std::abs(this->offs.y) + size.height)
