@@ -16,7 +16,7 @@
 
 
 void buildTextDropdown(TextDropdown *textDropdown, Size termSize) {
-  textDropdown->inputBuffer = {"", "", {0, 0}, {max(0, termSize.width - 30), 1}, 0, 0, ""};
+  textDropdown->inputBuffer = {"", "", true, {0, 0}, {max(0, termSize.width - 30), 1}, 0, 0, ""};
   textDropdown->showing = false;
 }
 
@@ -97,6 +97,21 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
               else {
                 if (editorData->textDropdown.action == TextAction::Open)
                   OpenFile(editorData->workingDirectory + "\\" + editorData->textDropdown.inputBuffer.buffer, editorData);
+                else if (editorData->textDropdown.action == TextAction::Save) {
+                  // TODO: move this into save function and pass filename and filepath as parameters
+                  std::ofstream out(filename);
+                  if (out) {
+                    editorData->buffers.textBuffers[editorData->buffers.cur].name = inputText;
+                    editorData->buffers.textBuffers[editorData->buffers.cur].filepath = editorData->workingDirectory;
+                    out.close();
+                    SaveFile(editorData);
+                  }
+                  else {
+                    editorData->textDropdown.showing = true;
+                    resetTextDropdown(&(editorData->textDropdown));
+                    out.close();
+                  }
+                }
               }
             }
             else {
