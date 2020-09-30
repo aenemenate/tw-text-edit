@@ -23,6 +23,7 @@ void buildTextDropdown(TextDropdown *textDropdown, Size termSize) {
 void resetTextDropdown(TextDropdown *textDropdown) {
   textDropdown->inputBuffer.buffer = "";
   textDropdown->inputBuffer.caret_pos = 0;
+  textDropdown->inputBuffer.caret_sel_pos = 0;
   textDropdown->inputBuffer.cached_x_pos = 0;
   textDropdown->inputBuffer.offs = {0, 0};
 }
