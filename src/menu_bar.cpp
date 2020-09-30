@@ -14,8 +14,8 @@ int MenuDropdown::getDropdownWidth() {
 
 void buildMenuBar(MenuBar *menuBar) {
   menuBar->clicked_opt = -1;
-  menuBar->options.push_back({"File", {{"New           (Ctrl+N)", NewFile}, {"Open          (Ctrl+O)", GetOpenFile}, {"Save          (Ctrl+S)", SaveFile},  {"Save As (Ctrl+Shift+S)", SaveFileAs}, {"Close         (Ctrl+C)", CloseFile}}});
-  //menuBar->options.push_back({"Edit", {{"Undo  (Ctrl + U)", nullptr}, {"Redo  (Ctrl + R)", nullptr}, {"Cut   (Ctrl + X)", nullptr}, {"Copy  (Ctrl + C)", nullptr}, {"Paste (Ctrl + V)", nullptr}, {"Find  (Ctrl + F)", nullptr}}});
+  menuBar->options.push_back({"File", {{"New           (Ctrl+N)", NewFile}, {"Open          (Ctrl+O)", GetOpenFile}, {"Save          (Ctrl+S)", SaveFile},  {"Save As (Ctrl+Shift+S)", SaveFileAs}, {"Close   (Ctrl+Shift+C)", CloseFile}}});
+  menuBar->options.push_back({"Edit", {/*{"Undo  (Ctrl + U)", nullptr}, {"Redo  (Ctrl + R)", nullptr}, */{"Cut   (Ctrl + X)", Cut}, {"Copy  (Ctrl + C)", Copy}, {"Paste (Ctrl + V)", Paste}/*, {"Find  (Ctrl + F)", nullptr}*/}});
   menuBar->options.push_back({"View", {{"Toggle Line Numbers", ToggleLineNums}/*, "Commands (Ctrl + M)"*/}});
 }
 
@@ -120,7 +120,8 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
           SaveFile(editorData);
       }
       else if (key == TK_C)
-        CloseFile(editorData);
+        if (terminal_check(TK_SHIFT))
+          CloseFile(editorData);
   }
   return return_value;
 }

@@ -10,4 +10,8 @@ void SaveFile(EditorData*);
 void SaveFileAs(EditorData*);
 void CloseFile(EditorData*);
 
+void Cut(EditorData*);
+void Copy(EditorData*);
+void Paste(EditorData*);
+
 void ToggleLineNums(EditorData*);

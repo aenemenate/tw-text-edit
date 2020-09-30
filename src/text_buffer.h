@@ -18,6 +18,9 @@ struct TextBuffer {
 
   void backspace(Size size, bool lineNums);
   void insertChar(char c, Size size, bool lineNums);
+  void paste(Size size, bool lineNums);
+  void copy(Size size, bool lineNums);
+  void cut(Size size, bool lineNums);
   void moveCaret(Direction dir, Size size, bool shiftSel, bool lineNums);
   Point getCaretPos(int caret_pos);
   int findNewline(int n);

@@ -1,6 +1,7 @@
 #include "editor_actions.h"
 #include "editor_data.h"
 #include "text_buffer.h"
+#include "../include/BearLibTerminal.h"
 
 #include <filesystem>
 #include <fstream>
@@ -69,6 +70,28 @@ void CloseFile(EditorData *editorData) {
   if (editorData->buffers.cur < 0) {
     editorData->buffers.cur = 0;
   }
+}
+
+
+void Cut(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) return;
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+  TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
+  curFile->cut(termSize, editorData->lineNums);
+}
+
+void Copy(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) return;
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+  TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
+  curFile->copy(termSize, editorData->lineNums);
+}
+
+void Paste(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) return;
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+  TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
+  curFile->paste(termSize, editorData->lineNums);
 }
 
 

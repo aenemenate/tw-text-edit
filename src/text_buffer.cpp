@@ -1,9 +1,14 @@
 #include "text_buffer.h"
 #include "../include/BearLibTerminal.h"
 #include "color_palette.h"
+#include "clipboard.h"
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 void caretSeek(int amount, TextBuffer *textBuffer) {
@@ -49,6 +54,34 @@ void TextBuffer::insertChar(char c, Size size, bool lineNums) {
   moveCaret(Direction::Right, size, false, lineNums);
   cached_x_pos = getCaretPos(caret_pos).x;
   isDirty = true;
+}
+
+void TextBuffer::paste(Size size, bool lineNums) {
+  if (caret_pos != caret_sel_pos)
+    backspace(size, lineNums);
+  std::string first_half = buffer.substr(0, caret_pos);
+  std::string second_half = buffer.substr(caret_pos, buffer.length() + 1 - caret_pos);
+  std::string clipboard = GetClipboardContents();
+  buffer = first_half + clipboard + second_half;
+  caretSeek(clipboard.length() - 1, this);
+  moveCaret(Direction::Right, size, false, lineNums);
+  cached_x_pos = getCaretPos(caret_pos).x;
+  isDirty = true;
+}
+
+void TextBuffer::copy(Size size, bool lineNums) {
+  if (caret_pos != caret_sel_pos) {
+    std::string text_to_copy = buffer.substr(min(caret_pos,caret_sel_pos), max(caret_pos,caret_sel_pos) - min(caret_pos,caret_sel_pos));
+    PushTextToClipboard(text_to_copy);
+  }
+}
+
+void TextBuffer::cut(Size size, bool lineNums) {
+  if (caret_pos != caret_sel_pos) {
+    std::string text_to_copy = buffer.substr(min(caret_pos,caret_sel_pos), max(caret_pos,caret_sel_pos) - min(caret_pos,caret_sel_pos));
+    PushTextToClipboard(text_to_copy);
+    backspace(size, lineNums);
+  }
 }
 
 void TextBuffer::moveCaret(Direction dir, Size size, bool shiftSelect, bool lineNums) {
@@ -150,8 +183,12 @@ TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty,
 }
 
 bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscapes, bool lineNums) {
-  if (terminal_state(TK_CONTROL))
+  if (terminal_state(TK_CONTROL)) {
+    if (key == TK_V) buf->paste(size, lineNums);
+    if (key == TK_C) buf->copy(size, lineNums);
+    if (key == TK_X) buf->cut(size, lineNums);
     return false;
+  }
   switch (key) {
       case (TK_RIGHT):
         buf->moveCaret(Direction::Right, size, terminal_state(TK_SHIFT), lineNums);
