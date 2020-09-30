@@ -7,8 +7,8 @@ A barebone text editor written in C++ meant to be used by me and nobody else.
 - Open files from command line
 - Line numbers
 - select text, delete it
+- copy / paste
 
 # To be added next
-- copy / paste
+- more navigation options (select cursor w/ mouse, ctrl-move, Home, End, etc.)
 - customizeable color themes
-- more navigation options (select cursor w/ mouse, ctrl-move)
