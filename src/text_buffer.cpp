@@ -11,7 +11,7 @@ void caretSeek(int amount, TextBuffer *textBuffer) {
   int x = 0;
   for (int i = 0; i < amount; ++x) {
     if (textBuffer->buffer[caret_pos + x] == '\t') {
-      i += 8 - textBuffer->getCaretPos().x % 8;
+      i += 8 - textBuffer->getCaretPos(caret_pos).x % 8;
     }
     else ++i;
     textBuffer->caret_pos++;
@@ -27,31 +27,31 @@ void TextBuffer::moveCaret(Direction dir, Size size, bool lineNums) {
       caret_pos -= 1; 
       if (caret_pos < 0)
         caret_pos = 0;
-      cached_x_pos = getCaretPos().x;
+      cached_x_pos = getCaretPos(caret_pos).x;
       break;
     case Direction::Right: 
       caret_pos += 1;
       if (caret_pos > buffer.length())
         caret_pos = buffer.length();
-      cached_x_pos = getCaretPos().x;
+      cached_x_pos = getCaretPos(caret_pos).x;
       break;
     case Direction::Up:
-      temp_pos = getCaretPos();
+      temp_pos = getCaretPos(caret_pos);
       caret_pos_temp = findNewline(max(0, temp_pos.y-1));
       caret_pos = caret_pos_temp;
       caretSeek(cached_x_pos, this);
-      caret_pos_check = getCaretPos();
+      caret_pos_check = getCaretPos(caret_pos);
       if (caret_pos_check.y != max(0, temp_pos.y-1))
         caret_pos = findNewline(max(0, temp_pos.y))-1;
       if (caret_pos < 0)
         caret_pos = 0;
       break;
     case Direction::Down:
-      temp_pos = getCaretPos();
+      temp_pos = getCaretPos(caret_pos);
       caret_pos_temp = findNewline(temp_pos.y+1);
       caret_pos = caret_pos_temp;
       caretSeek(cached_x_pos, this);
-      caret_pos_check = getCaretPos();
+      caret_pos_check = getCaretPos(caret_pos);
       if (caret_pos != buffer.length() && caret_pos_check.y != max(0, temp_pos.y+1)) {
         caret_pos = findNewline(max(0, temp_pos.y+2))-1;
       }
@@ -60,7 +60,7 @@ void TextBuffer::moveCaret(Direction dir, Size size, bool lineNums) {
       }
       break;
   }
-  Point temp = getCaretPos();
+  Point temp = getCaretPos(caret_pos);
   if (temp.x < std::abs(this->offs.x))
     this->offs.x = -temp.x;
   if (temp.x >= std::abs(this->offs.x) + size.width - (lineNums ? 4 : 0))
@@ -71,7 +71,7 @@ void TextBuffer::moveCaret(Direction dir, Size size, bool lineNums) {
     this->offs.y = - (temp.y - size.height)-1;
 }
 
-Point TextBuffer::getCaretPos() {
+Point TextBuffer::getCaretPos(int caret_pos) {
     Point pos = {0,0};
     for (int i = 0; i < buffer.length() + 1; ++i) {
         if (caret_pos == i)
@@ -99,6 +99,23 @@ int TextBuffer::findNewline(int n) {
   return 0;
 }
 
+TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty, 
+                     Point offs, Point pos, std::string buffer) {
+  TextBuffer textBuffer;
+  textBuffer.name 	= name;
+  textBuffer.filepath 	= filepath;
+  textBuffer.isDirty 	= isDirty;
+  textBuffer.offs 	= offs;
+  textBuffer.pos	= pos;
+  textBuffer.
+    cached_x_pos 	= 0;
+  textBuffer.caret_pos = 0;
+  textBuffer.
+    caret_sel_pos = 0;
+  textBuffer.buffer	= buffer;
+  return textBuffer;
+}
+
 bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscapes, bool lineNums) {
   if (terminal_state(TK_CONTROL))
     return false;
@@ -123,7 +140,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + "\n" + second_half;
     buf->moveCaret(Direction::Right, size, lineNums);
-    buf->cached_x_pos = buf->getCaretPos().x;
+    buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
     buf->isDirty = true;
   }
   else if (key == TK_TAB) {
@@ -132,7 +149,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + "\t" + second_half;
     buf->moveCaret(Direction::Right, size, lineNums);
-    buf->cached_x_pos = buf->getCaretPos().x;
+    buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
     buf->isDirty = true;
   }
   else if (key == TK_BACKSPACE && buf->buffer.length() > 0) {
@@ -141,7 +158,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + second_half;
     buf->moveCaret(Direction::Left, size, lineNums);
-    buf->cached_x_pos = buf->getCaretPos().x;
+    buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
     buf->isDirty = true;
   }
   else if (terminal_check(TK_WCHAR)) {
@@ -150,7 +167,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     std::string second_half = buf->buffer.substr(buf->caret_pos, buf->buffer.length() + 1 - buf->caret_pos);
     buf->buffer = first_half + (char)terminal_state(TK_WCHAR) + second_half;
     buf->moveCaret(Direction::Right, size, lineNums);
-    buf->cached_x_pos = buf->getCaretPos().x;
+    buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
     buf->isDirty = true;
   }
   return false;
@@ -192,7 +209,7 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool
 
   terminal_color(colorPalette->workspaceDefaultColor.bg.c_str());
   terminal_bkcolor(colorPalette->workspaceDefaultColor.fg.c_str());
-  Point caret_pos = buf->getCaretPos();
+  Point caret_pos = buf->getCaretPos(buf->caret_pos);
   char prev_char = terminal_pick((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y);
   terminal_put((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y, prev_char);
 

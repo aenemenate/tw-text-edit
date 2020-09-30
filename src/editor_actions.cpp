@@ -6,7 +6,7 @@
 #include <fstream>
 
 void NewFile(EditorData *editorData) {
-  editorData->buffers.textBuffers.push_back({"New " + std::to_string(editorData->nextFile), "", true, {0, 0}, {0, 2}, 0, 0, ""});
+  editorData->buffers.textBuffers.push_back(buildTextBuffer("New " + std::to_string(editorData->nextFile), "", true, {0, 0}, {0, 2}, ""));
   ++editorData->nextFile;
   editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
 }
@@ -22,7 +22,7 @@ void OpenFile(std::string name, EditorData *editorData) {
   std::ifstream filestream(name);
   std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
   if (filestream) {
-    editorData->buffers.textBuffers.push_back({filename.filename().string(), filename.parent_path().string(), false, {0, 0}, {0, 2}, 0, 0, file});
+    editorData->buffers.textBuffers.push_back(buildTextBuffer(filename.filename().string(), filename.parent_path().string(), false, {0, 0}, {0, 2}, file));
     editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
   }
   filestream.close();

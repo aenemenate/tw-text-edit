@@ -16,7 +16,7 @@
 
 
 void buildTextDropdown(TextDropdown *textDropdown, Size termSize) {
-  textDropdown->inputBuffer = {"", "", true, {0, 0}, {max(0, termSize.width - 30), 1}, 0, 0, ""};
+  textDropdown->inputBuffer = buildTextBuffer("", "", true, {0, 0}, {max(0, termSize.width - 30), 1}, "");
   textDropdown->showing = false;
 }
 
