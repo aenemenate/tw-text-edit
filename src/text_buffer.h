@@ -13,10 +13,12 @@ struct TextBuffer {
   Point pos;            // draw pos
   int cached_x_pos;     // x pos to jump to when go to new line
   int caret_pos;        // caret_pos (in terms of string index)
-  int caret_sel_pos;
+  int caret_sel_pos;    // caret_sel_pos
   std::string buffer;   // the buffer itself
 
-  void moveCaret(Direction dir, Size size, bool lineNums);
+  void backspace(Size size, bool lineNums);
+  void insertChar(char c, Size size, bool lineNums);
+  void moveCaret(Direction dir, Size size, bool shiftSel, bool lineNums);
   Point getCaretPos(int caret_pos);
   int findNewline(int n);
 };
