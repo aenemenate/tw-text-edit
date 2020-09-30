@@ -22,7 +22,7 @@ void OpenFile(std::string name, EditorData *editorData) {
   std::ifstream filestream(name);
   std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
   if (filestream) {
-    editorData->buffers.textBuffers.push_back({filename.filename().string(), filename.parent_path().string(), true, {0, 0}, {0, 2}, 0, 0, file});
+    editorData->buffers.textBuffers.push_back({filename.filename().string(), filename.parent_path().string(), false, {0, 0}, {0, 2}, 0, 0, file});
     editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
   }
   filestream.close();
@@ -31,12 +31,13 @@ void OpenFile(std::string name, EditorData *editorData) {
 void SaveFile(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty())
     return;
-  TextBuffer curFile = editorData->buffers.textBuffers[editorData->buffers.cur];
-  if (curFile.name != "" && curFile.filepath != "") {
-    std::filesystem::path filename = std::filesystem::path(curFile.filepath + '\\' + curFile.name);
+  TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
+  if (curFile->name != "" && curFile->filepath != "") {
+    std::filesystem::path filename = std::filesystem::path(curFile->filepath + '\\' + curFile->name);
     std::ofstream out(filename);
-    out << curFile.buffer;
+    out << curFile->buffer;
     out.close();
+    curFile->isDirty = false;
   }
   else {
     editorData->textDropdown.showing = true;
@@ -54,6 +55,9 @@ void SaveFileAs(EditorData *editorData) {
 }
 
 void CloseFile(EditorData *editorData) {
+  if (editorData->buffers.textBuffers[editorData->buffers.cur].isDirty) {
+    // prompt to save
+  }
   if (editorData->buffers.textBuffers.empty())
     return;
   editorData->buffers.textBuffers.erase(editorData->buffers.textBuffers.begin() + editorData->buffers.cur, 

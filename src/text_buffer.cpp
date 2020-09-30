@@ -124,6 +124,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     buf->buffer = first_half + "\n" + second_half;
     buf->moveCaret(Direction::Right, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
+    buf->isDirty = true;
   }
   else if (key == TK_TAB) {
 // No distinction between confirmation and interruption
@@ -132,6 +133,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     buf->buffer = first_half + "\t" + second_half;
     buf->moveCaret(Direction::Right, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
+    buf->isDirty = true;
   }
   else if (key == TK_BACKSPACE && buf->buffer.length() > 0) {
 // Remove one character
@@ -140,6 +142,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     buf->buffer = first_half + second_half;
     buf->moveCaret(Direction::Left, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
+    buf->isDirty = true;
   }
   else if (terminal_check(TK_WCHAR)) {
 // Append one character
@@ -148,6 +151,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     buf->buffer = first_half + (char)terminal_state(TK_WCHAR) + second_half;
     buf->moveCaret(Direction::Right, size, lineNums);
     buf->cached_x_pos = buf->getCaretPos().x;
+    buf->isDirty = true;
   }
   return false;
 }

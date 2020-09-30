@@ -9,7 +9,7 @@ void buildEditorData(EditorData *editorData) {
   }
   editorData->running = true;
   editorData->lineNums = false;
-  editorData->nextFile = 2;
+  editorData->nextFile = 1;
   editorData->workingDirectory = "C:";
   buildMenuBar(&(editorData->menuBar));
   buildBufferList(&(editorData->buffers));
