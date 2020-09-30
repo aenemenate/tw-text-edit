@@ -235,15 +235,17 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool
   }
   int i = 0;
   for (char c : buf->buffer) {
-    if ((i >= buf->caret_sel_pos && i <= buf->caret_pos) || (i >= buf->caret_pos && i <= buf->caret_sel_pos)) 
+    if (((i >= buf->caret_sel_pos && i <= buf->caret_pos) || (i >= buf->caret_pos && i <= buf->caret_sel_pos)) 
+    &&    buf->caret_pos != buf->caret_sel_pos) 
       terminal_bkcolor("dark orange");
     else terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
     if (c != '\n' && c != '\t' && x + buf->offs.x < size.width - (lineNums ? 4 : 0) && x + buf->offs.x >= 0 && y + buf->offs.y < size.height && y + buf->offs.y >= 0)
       terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
     if (c == '\n') {
+      if (buf->buffer[i-1] == '\n')
+        terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, ' ');
       ++y;
       x = 0;
-      terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, ' ');
       if (lineNums) {
         terminal_bkcolor(std::string{"dark " + colorPalette->workspaceDefaultColor.bg}.c_str());
         terminal_clear_area(0, buf->pos.y + y, 4, 1);
@@ -253,7 +255,7 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool
     }
     else if (c == '\t') {
       for (int cx = x; cx <= x + 8 - x % 8; cx++)
-        terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, ' ');
+        terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + cx, buf->pos.y + buf->offs.y + y, ' ');
       x += 8 - x % 8;
     }
     else ++x;
