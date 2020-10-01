@@ -210,7 +210,7 @@ void updateBufVec(TextBuffer *buf, ColorPalette *colorPalette) {
     }
   }
 // purple (actions)
-  keywords = { "#ifndef", "for", "#define", "#endif", "if", "continue", "break", "using",  "while", "static", "do", "goto", "throw", "return", "else", "switch", "case", "try", "catch" };
+  keywords = { "#ifndef", "for", "#define", "#endif", "if", "continue", "break", "using",  "while", "static", "do", "goto", "throw", "return", "else", "switch", "case", "try", "catch", "delete", "default", "new" };
   for (int i = 0; i < keywords.size(); ++i) {
     std::vector<char> check_chars_end = {'(', ' ', '\n', '\t', ';', '{', '}', ':'};
     std::vector<char> check_chars_front = {' ', '\n', '\t', ';', '{', '}'};
@@ -225,9 +225,9 @@ void updateBufVec(TextBuffer *buf, ColorPalette *colorPalette) {
     }
   }
 // blue (data)
-  keywords = { "sizeof", "int", "bool", "enum", "static_cast", "struct", "inline", "", "char", "new", "union", "extern", "class", "auto", "this", "long", "double", "float","const", "unsigned", "protected", "private", "public", "virtual", "void", "NULL", "nullptr", "true", "false", "friend" };
+  keywords = { "sizeof", "int", "bool", "enum", "static_cast", "template", "typedef", "typeid", "typename", "mutable", "namespace", "static", "dynamic_cast", "struct", "inline", "volatile", "char", "union", "extern", "class", "auto", "this", "long", "double", "float","const", "unsigned", "protected", "private", "public", "virtual", "void", "NULL", "nullptr", "true", "false", "friend" };
   for (int i = 0; i < keywords.size(); ++i) {
-    std::vector<char> check_chars_end = {'>', '<', '=', ')', '(', '[', '-', '{', ' ', ';', '.', '&', ':', '\n', '\t'};
+    std::vector<char> check_chars_end = {'>', '<', '=', ')', '(', '[', '-', '{', ' ', ';', '.', '&', ':', ',', '\n', '\t'};
     std::vector<char> check_chars_front = {'<', '=', ' ', '(', ')', ',', ';', '{', '*', '\n', '\t'};
     size_t c = -1;
     while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
