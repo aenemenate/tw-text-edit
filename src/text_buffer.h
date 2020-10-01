@@ -30,4 +30,4 @@ TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty,
 
 bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscapes, bool lineNums); 
 
-void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool lineNums);
+void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums);

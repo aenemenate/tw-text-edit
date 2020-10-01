@@ -2,7 +2,6 @@
 
 #include "text_buffer.h"
 
-class ColorPalette;
 class EditorData;
 
 enum TextAction {
@@ -22,6 +21,6 @@ void buildTextDropdown(TextDropdown *textDropdown, Size termSize);
 
 void resetTextDropdown(TextDropdown *textDropdown);
 
-void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, ColorPalette *colorPalette, Size termSize);
+void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, Size termSize);
 
 bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize);

@@ -39,9 +39,9 @@ void update(Size termSize) {
 
 void draw(Size termSize) {
   terminal_clear();
-  drawBufferList(&(editorData.buffers), &(editorData.colorPalette), termSize, editorData.menuBar.clicked_opt == -1, editorData.lineNums);
-  drawMenuBar(&(editorData.menuBar), &(editorData.colorPalette), termSize);
-  drawTextDropdown(&(editorData.textDropdown), &(editorData.workingDirectory) , &(editorData.colorPalette), termSize);
+  drawBufferList(&(editorData.buffers), termSize, editorData.menuBar.clicked_opt == -1, editorData.lineNums);
+  drawMenuBar(&(editorData.menuBar), termSize);
+  drawTextDropdown(&(editorData.textDropdown), &(editorData.workingDirectory), termSize);
   terminal_refresh();
 }
 

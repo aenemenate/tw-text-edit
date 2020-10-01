@@ -1,5 +1,4 @@
 #include "text_dropdown.h"
-#include "color_palette.h"
 #include "../include/BearLibTerminal.h"
 #include "editor_data.h"
 #include "helpers.h"
@@ -28,9 +27,9 @@ void resetTextDropdown(TextDropdown *textDropdown) {
   textDropdown->inputBuffer.offs = {0, 0};
 }
 
-void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, ColorPalette *colorPalette, Size termSize) {
+void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, Size termSize) {
   if (textDropdown->showing) {
-    drawTextBuffer(&(textDropdown->inputBuffer), colorPalette, {30, 1}, false);
+    drawTextBuffer(&(textDropdown->inputBuffer), {30, 1}, false);
     if (textDropdown->action == TextAction::Open || textDropdown->action == TextAction::Save) {
       int x_pos = max(0, termSize.width - 30);
       terminal_print(min(x_pos, termSize.width - workingDirectory->length()),0,workingDirectory->c_str());
@@ -82,7 +81,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
             if(illegalChars.find(*it) != std::string::npos)
               break;
           }
-          filename = editorData->workingDirectory + "\\" + inputText;
+          filename = editorData->workingDirectory + '\\' + inputText;
           if (inputText != "" && inputText != "." && isNotAllSpaces(inputText)) {
             if (std::filesystem::exists(filename)) {
               if (inputText == "..") {
@@ -97,7 +96,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
               }
               else {
                 if (editorData->textDropdown.action == TextAction::Open)
-                  OpenFile(editorData->workingDirectory + "\\" + editorData->textDropdown.inputBuffer.buffer, editorData);
+                  OpenFile(editorData->workingDirectory + '\\' + editorData->textDropdown.inputBuffer.buffer, editorData);
                 else if (editorData->textDropdown.action == TextAction::Save) {
                   // TODO: move this into save function and pass filename and filepath as parameters
                   std::ofstream out(filename);

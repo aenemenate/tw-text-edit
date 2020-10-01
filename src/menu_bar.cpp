@@ -19,9 +19,9 @@ void buildMenuBar(MenuBar *menuBar) {
   menuBar->options.push_back({"View", {{"Toggle Line Numbers", ToggleLineNums}/*, "Commands (Ctrl + M)"*/}});
 }
 
-void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size termSize) {
-  terminal_color(colorPalette->menuBarDropdownColor.fg.c_str());
-  terminal_bkcolor(colorPalette->menuBarDropdownColor.bg.c_str());
+void drawMenuBarDropdown(MenuBar *menuBar, Size termSize) {
+  terminal_color(color_from_name("menudrpdwnfg"));
+  terminal_bkcolor(color_from_name("menudrpdwnbk"));
   int start_x = 0;
   for (int i = 0; i < menuBar->clicked_opt; ++i) {
     start_x += menuBar->options[i].name.length() + 1;
@@ -29,12 +29,12 @@ void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size term
   for (int j = 0; j < menuBar->options[menuBar->clicked_opt].options.size(); ++j) {
     if (terminal_state(TK_MOUSE_Y) == 1 + j && terminal_state(TK_MOUSE_X) >= start_x 
     && terminal_state(TK_MOUSE_X) < start_x + menuBar->options[menuBar->clicked_opt].getDropdownWidth()) {
-      terminal_color(colorPalette->menuBarDropdownHighlightedColor.fg.c_str());
-      terminal_bkcolor(colorPalette->menuBarDropdownHighlightedColor.bg.c_str());
+      terminal_color(color_from_name("menudrpdwnhlfg"));
+      terminal_bkcolor(color_from_name("menudrpdwnhlbk"));
     }
     else {
-      terminal_color(colorPalette->menuBarDropdownColor.fg.c_str());
-      terminal_bkcolor(colorPalette->menuBarDropdownColor.bg.c_str());
+      terminal_color(color_from_name("menudrpdwnfg"));
+      terminal_bkcolor(color_from_name("menudrpdwnbk"));
     }
     int x_end = start_x + terminal_print(start_x, j+1, menuBar->options[menuBar->clicked_opt].options[j].name.c_str()).width;
     for (int i = x_end; i < start_x + menuBar->options[menuBar->clicked_opt].getDropdownWidth(); ++i)
@@ -42,9 +42,9 @@ void drawMenuBarDropdown(MenuBar *menuBar, ColorPalette *colorPalette, Size term
   }
 }
 
-void drawMenuBar(MenuBar *menuBar, ColorPalette *colorPalette, Size termSize) {
-  terminal_color(colorPalette->menuBarColor.fg.c_str());
-  terminal_bkcolor(colorPalette->menuBarColor.bg.c_str());
+void drawMenuBar(MenuBar *menuBar, Size termSize) {
+  terminal_color(color_from_name("menubarfg"));
+  terminal_bkcolor(color_from_name("menubarbk"));
 // bar bg
   for (int i = 0; i < termSize.width; ++i)
     terminal_put(i, 0, ' ');
@@ -55,20 +55,20 @@ void drawMenuBar(MenuBar *menuBar, ColorPalette *colorPalette, Size termSize) {
   for (int i = 0; i < menuBar->options.size(); ++i) {
     if (mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + menuBar->options[i].name.length()
     ||  menuBar->clicked_opt == i) {
-      terminal_bkcolor(colorPalette->menuBarHighlightedColor.bg.c_str());
-      terminal_color(colorPalette->menuBarHighlightedColor.fg.c_str());
+      terminal_color(color_from_name("menubarhlfg"));
+      terminal_bkcolor(color_from_name("menubarhlbk"));
     }
     cur_x += terminal_print(cur_x, 0, menuBar->options[i].name.c_str()).width + 1;
-    terminal_color(colorPalette->menuBarColor.fg.c_str());
-    terminal_bkcolor(colorPalette->menuBarColor.bg.c_str());
+    terminal_color(color_from_name("menubarfg"));
+    terminal_bkcolor(color_from_name("menubarbk"));
   }
 // dropdown
   if (menuBar->clicked_opt != -1) {
-      drawMenuBarDropdown(menuBar, colorPalette, termSize);
+      drawMenuBarDropdown(menuBar, termSize);
   }
   // set colors back to defaults
-  terminal_color(colorPalette->workspaceDefaultColor.fg.c_str());
-  terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
+  terminal_color(color_from_name("workspacedefaultfg"));
+  terminal_bkcolor(color_from_name("workspacedefaultbk"));
 }
 
 bool clickedMenuBarDropdown(EditorData* editorData, Size termSize) {

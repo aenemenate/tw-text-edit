@@ -13,6 +13,5 @@ void buildEditorData(EditorData *editorData) {
   editorData->workingDirectory = "C:";
   buildMenuBar(&(editorData->menuBar));
   buildBufferList(&(editorData->buffers));
-  buildColorPalette(&(editorData->colorPalette));
   buildTextDropdown(&(editorData->textDropdown), termSize);
 }

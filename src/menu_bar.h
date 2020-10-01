@@ -26,7 +26,7 @@ struct MenuBar {
 
 void buildMenuBar(MenuBar *menuBar);
 
-void drawMenuBar(MenuBar *menuBar, ColorPalette *colorPalette, Size termSize);
+void drawMenuBar(MenuBar *menuBar, Size termSize);
 
 bool clickedMenuBarDropdown(EditorData* editorData, Size termSize);
 
