@@ -17,7 +17,7 @@ EditorData editorData;
 void init(std::string fileName) {
   buildEditorData(&editorData);
   if (fileName != "") {
-    OpenFile(fileName, &editorData);
+    OpenFile(std::filesystem::current_path().string() + fileName, &editorData);
   }
   std::filesystem::current_path(std::filesystem::path(_pgmptr).parent_path());
   terminal_open();

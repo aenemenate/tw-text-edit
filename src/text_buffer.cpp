@@ -3,6 +3,8 @@
 #include "color_palette.h"
 #include "clipboard.h"
 
+#include <vector>
+
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
@@ -175,11 +177,123 @@ TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty,
   textBuffer.pos	= pos;
   textBuffer.
     cached_x_pos 	= 0;
-  textBuffer.caret_pos = 0;
+  textBuffer.caret_pos 	= 0;
   textBuffer.
-    caret_sel_pos = 0;
+    caret_sel_pos 	= 0;
   textBuffer.buffer	= buffer;
   return textBuffer;
+}
+
+std::vector<color_t> bufVec;
+
+// "syntax highlighting"
+void updateBufVec(TextBuffer *buf, ColorPalette *colorPalette) {
+  bufVec.resize(buf->buffer.length());
+  int ix = 0;
+  color_t fg_color = color_from_name(colorPalette->workspaceDefaultColor.fg.c_str());
+  for (auto c : buf->buffer) {
+    bufVec[ix] = fg_color;
+    ++ix;
+  }
+  if (buf->name.find(".cpp", 0) != std::string::npos 
+  ||  buf->name.find(".h", 0)   != std::string::npos 
+  ||  buf->name.find(".hpp", 0) != std::string::npos) {
+  // prepocessor directives
+  std::vector<std::string> keywords = { "#include", "#pragma once", "#pragma" };
+  for (int i = 0; i < keywords.size(); ++i) {
+    size_t c = -1;
+    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
+      c = buf->buffer.find(keywords[i], c+1);
+      for (int j = c; j < c + keywords[i].length(); ++j) {
+        bufVec[j] = color_from_name("#d33682");
+      }
+    }
+  }
+// purple (actions)
+  keywords = { "#ifndef", "for", "#define", "#endif", "if", "continue", "break", "using",  "while", "static", "do", "goto", "throw", "return", "else", "switch", "case", "try", "catch" };
+  for (int i = 0; i < keywords.size(); ++i) {
+    std::vector<char> check_chars_end = {'(', ' ', '\n', '\t', ';', '{', '}', ':'};
+    std::vector<char> check_chars_front = {' ', '\n', '\t', ';', '{', '}'};
+    size_t c = -1;
+    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
+      c = buf->buffer.find(keywords[i], c+1);
+      if ((c+keywords[i].length() >= buf->buffer.length() || std::count(check_chars_end.begin(), check_chars_end.end(), buf->buffer[c+keywords[i].length()]))
+      &&  (c-1 < 0 || std::count(check_chars_front.begin(), check_chars_front.end(), buf->buffer[c-1]))) {
+        for (int j = c; j < c + keywords[i].length(); ++j)
+          bufVec[j] = color_from_name("#6c71c4");
+      }
+    }
+  }
+// blue (data)
+  keywords = { "sizeof", "int", "bool", "enum", "static_cast", "struct", "inline", "", "char", "new", "union", "extern", "class", "auto", "this", "long", "double", "float","const", "unsigned", "protected", "private", "public", "virtual", "void", "NULL", "nullptr", "true", "false", "friend" };
+  for (int i = 0; i < keywords.size(); ++i) {
+    std::vector<char> check_chars_end = {'>', '<', '=', ')', '(', '[', '-', '{', ' ', ';', '.', '&', ':', '\n', '\t'};
+    std::vector<char> check_chars_front = {'<', '=', ' ', '(', ')', ',', ';', '{', '*', '\n', '\t'};
+    size_t c = -1;
+    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
+      c = buf->buffer.find(keywords[i], c+1);
+      if ((c+keywords[i].length() >= buf->buffer.length() || std::count(check_chars_end.begin(), check_chars_end.end(), buf->buffer[c+keywords[i].length()]))
+      &&  (c-1 < 0 || std::count(check_chars_front.begin(), check_chars_front.end(), buf->buffer[c-1]))) {
+        for (int j = c; j < c + keywords[i].length(); ++j) {
+          bufVec[j] = color_from_name("#268bd2");
+        }
+      }
+    }
+  }
+
+// mathematical symbols
+  keywords = { "{", "}", "(", ")", "*", "&", "/", "+", "-", "=", "!", ">", "<", ":", ",", "." };
+  for (int i = 0; i < keywords.size(); ++i) {
+    size_t c = -1;
+    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
+      c = buf->buffer.find(keywords[i], c+1);
+      for (int j = c; j < c + keywords[i].length(); ++j) {
+        bufVec[j] = color_from_name("dark #fdf6e3");
+      }
+    }
+  }
+
+// yellow: chars
+  ix = 0;
+  bool toggleChar = false;
+  for (auto c : buf->buffer) {
+    fg_color = bufVec[ix];
+    if (c == '\'' && !(buf->buffer[ix-1] == '\\' && buf->buffer[ix-2] != '\\')) {
+      toggleChar = !toggleChar;
+      fg_color = color_from_name("#b58900");
+    }
+    if (toggleChar)
+      fg_color = color_from_name("#b58900");
+    bufVec[ix] = {fg_color};
+    ++ix;
+  }
+// green: comments, strings
+  ix = 0;
+  bool toggleString = false, toggleComment = false, toggleMultiLineComment = false;
+  for (auto c : buf->buffer) {
+    fg_color = bufVec[ix];
+    if (c == '"' && ix > 0 && buf->buffer[ix-1] != '\\' && buf->buffer[ix-1] != '\'') {
+      toggleString = !toggleString;
+      fg_color = color_from_name("#859900");
+    }
+    else if (c == '/' && ix < buf->buffer.length() - 1 && buf->buffer[ix+1] == '/' && toggleMultiLineComment == false)
+      toggleComment = true;
+    else if (c == '/' && ix < buf->buffer.length() - 1 && buf->buffer[ix+1] == '*')
+      toggleMultiLineComment = true;
+    if (toggleString)
+      fg_color = color_from_name("#859900");
+    if (toggleComment || toggleMultiLineComment) {
+      if ((toggleComment && ix < buf->buffer.length() - 1 && buf->buffer[ix+1] == '\n') 
+      || (toggleMultiLineComment && c == '/' && ix > 0 && buf->buffer[ix-1] == '*')) {  
+        toggleComment = false;
+        toggleMultiLineComment = false;
+      }
+      fg_color = color_from_name("#859900");
+    }
+    bufVec[ix] = fg_color;
+    ++ix;
+  }
+  }
 }
 
 bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscapes, bool lineNums) {
@@ -219,8 +333,12 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
 }
 
 void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool lineNums) {
-  terminal_color(colorPalette->workspaceDefaultColor.fg.c_str());
-  terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
+  color_t term_color;
+  color_t term_bkcolor;
+  if (bufVec.size() != buf->buffer.length()) {
+    updateBufVec(buf, colorPalette);
+  }
+  terminal_color(term_color = color_from_name(colorPalette->workspaceDefaultColor.fg.c_str()));
   for (int i = buf->pos.x; i < buf->pos.x + size.width; ++i)
     for (int j = buf->pos.y; j < buf->pos.y + size.height; ++j) {
       terminal_put(i, j, ' ');
@@ -228,18 +346,26 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool
   int y = 0;
   int x = 0;
   if (lineNums) {
-    terminal_bkcolor(std::string{"dark " + colorPalette->workspaceDefaultColor.bg}.c_str());
+    terminal_bkcolor(term_bkcolor = color_from_name(("dark " + colorPalette->workspaceDefaultColor.bg).c_str()));
     terminal_clear_area(0, buf->pos.y, 4, 1);
     terminal_print(0, buf->pos.y, std::to_string(std::abs(buf->offs.y) + 1).c_str());
-    terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
+    terminal_bkcolor(term_bkcolor = color_from_name(colorPalette->workspaceDefaultColor.bg.c_str()));
   }
   int i = 0;
   for (char c : buf->buffer) {
-    if (((i >= buf->caret_sel_pos && i <= buf->caret_pos) || (i >= buf->caret_pos && i <= buf->caret_sel_pos)) 
-    &&    buf->caret_pos != buf->caret_sel_pos) 
-      terminal_bkcolor("dark orange");
-    else terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
-    if (c != '\n' && c != '\t' && x + buf->offs.x < size.width - (lineNums ? 4 : 0) && x + buf->offs.x >= 0 && y + buf->offs.y < size.height && y + buf->offs.y >= 0)
+    color_t *color = &(bufVec[i]);
+    if (((i >= buf->caret_sel_pos && i < buf->caret_pos) || (i >= buf->caret_pos && i < buf->caret_sel_pos)) 
+    &&    buf->caret_pos != buf->caret_sel_pos) {
+      terminal_bkcolor(term_bkcolor = color_from_name("darker #cb4b16"));
+    }
+    if (i == buf->caret_pos && buf->caret_pos > buf->caret_sel_pos
+    ||  i == buf->caret_sel_pos && buf->caret_sel_pos > buf->caret_pos)
+      terminal_bkcolor(term_bkcolor = color_from_name(colorPalette->workspaceDefaultColor.bg.c_str()));
+    
+    if (term_color != *color) terminal_color(term_color = *color);
+    if (c != '\n' && c != '\t' 
+    &&  x + buf->offs.x < size.width - (lineNums ? 4 : 0) && x + buf->offs.x >= 0 
+    &&  y + buf->offs.y < size.height && y + buf->offs.y >= 0)
       terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
     if (c == '\n') {
       if (buf->buffer[i-1] == '\n')
@@ -247,10 +373,10 @@ void drawTextBuffer(TextBuffer *buf, ColorPalette *colorPalette, Size size, bool
       ++y;
       x = 0;
       if (lineNums) {
-        terminal_bkcolor(std::string{"dark " + colorPalette->workspaceDefaultColor.bg}.c_str());
+        terminal_bkcolor(term_bkcolor = color_from_name(("dark " + colorPalette->workspaceDefaultColor.bg).c_str()));
         terminal_clear_area(0, buf->pos.y + y, 4, 1);
         terminal_print(0, buf->pos.y + y, std::to_string(std::abs(buf->offs.y) + 1 + y).c_str());
-        terminal_bkcolor(colorPalette->workspaceDefaultColor.bg.c_str());
+        terminal_bkcolor(term_bkcolor = color_from_name(colorPalette->workspaceDefaultColor.bg.c_str()));
       }
     }
     else if (c == '\t') {
