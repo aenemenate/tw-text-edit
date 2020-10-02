@@ -472,6 +472,8 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     return false;
   }
   int scrollMult = 4;
+  int newLines = 0;
+  int pos = 0;
   switch (key) {
       case (TK_RIGHT):
 	buf->moveCaret(Direction::Right, size, terminal_state(TK_SHIFT), lineNums);
@@ -517,8 +519,12 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
       case (TK_PAGEDOWN):
 	buf->offs.y -= size.height;
 	break;
-      case (TK_MOUSE_SCROLL):
-        buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y - ((terminal_state(TK_MOUSE_WHEEL) < 0) ? scrollMult : -scrollMult));
+      case (TK_MOUSE_SCROLL):
+        while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
+          ++newLines;
+          ++pos;
+        }
+        buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y - ((terminal_state(TK_MOUSE_WHEEL) < 0) ? (scrollMult) : ((buf->getCaretPos(buf->caret_pos).y < newLines - scrollMult) ? -scrollMult : -(newLines-buf->getCaretPos(buf->caret_pos).y))));
 	buf->caret_sel_pos = buf->caret_pos;
 	buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
         buf->setOffs(size, lineNums);
