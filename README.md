@@ -4,7 +4,8 @@ A barebone text editor written in C++.
 ## Features
 - Edit multiple buffers
 - Open/Save files
-- Open files from command line
+- Open as many files as you want from the command line
+- Open a file at a specific line from the command line
 - Line numbers
 - select text, delete it
 - copy / paste
@@ -16,7 +17,7 @@ A barebone text editor written in C++.
 - Right click buffer for a context menu
 
 ### To be added very soon
-- open directories in buffers
+- directory browser
 - call batch files from in the editor
 - syntax highlighting for more languages (ini files, makefiles, batch files)
 
