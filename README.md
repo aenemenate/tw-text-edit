@@ -13,6 +13,7 @@ A barebone text editor written in C++.
 - Ctrl move cursor, Home, End, Scroll w/ mouse
 - Page Up, Page Down
 - Left click, select text with mouse
+- Right click buffer for a context menu
 
 ### To be added very soon
 - open directories in buffers
