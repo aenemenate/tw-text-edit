@@ -45,6 +45,10 @@ void init(int argc, char *argv[]) {
       if (std::string{argv[1]} != "") {
         editorData.workingDirectory = start_path.string();
         OpenFile(arg, &editorData);
+        if (std::string{argv[1]} == ".") {
+	  editorData.textDropdown.showing = true;
+	  editorData.textDropdown.action = TextAction::Open;
+        }
       }
     }
   }

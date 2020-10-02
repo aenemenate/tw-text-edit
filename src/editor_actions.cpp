@@ -30,7 +30,8 @@ void OpenFile(std::string name, EditorData *editorData) {
 }
 
 void SaveFile(EditorData *editorData) {
-  if (editorData->buffers.textBuffers.empty())
+  if (editorData->buffers.textBuffers.empty() ||
+      !editorData->buffers.textBuffers[editorData->buffers.cur].isDirty)
     return;
   TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
   if (curFile->name != "" && curFile->filepath != "") {
@@ -48,11 +49,22 @@ void SaveFile(EditorData *editorData) {
 }
 
 void SaveFileAs(EditorData *editorData) {
-  if (editorData->buffers.textBuffers.empty())
+  if (editorData->buffers.textBuffers.empty() ||
+      !editorData->buffers.textBuffers[editorData->buffers.cur].isDirty)
     return;
   editorData->textDropdown.showing = true;
   editorData->textDropdown.action = TextAction::Save;
   resetTextDropdown(&(editorData->textDropdown));
+}
+
+void SaveAllFiles(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty())
+    return;
+  int starting_buf = editorData->buffers.cur;
+  for (int i = 0; i < editorData->buffers.textBuffers.size(); ++i) {
+    editorData->buffers.cur = i;
+    SaveFile(editorData);
+  }
 }
 
 void CloseFile(EditorData *editorData) {

@@ -8,6 +8,7 @@ void GetOpenFile(EditorData*);
 void OpenFile(std::string name, EditorData*);
 void SaveFile(EditorData*);
 void SaveFileAs(EditorData*);
+void SaveAllFiles(EditorData*);
 void CloseFile(EditorData*);
 
 void Cut(EditorData*);
