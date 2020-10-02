@@ -1,5 +1,5 @@
-Objs = main.obj helpers.obj editor_actions.obj editor_data.obj \
-       text_buffer.obj menu_bar.obj buffer_list.obj text_dropdown.obj clipboard.obj
+Objs = main.obj helpers.obj editor_actions.obj editor_data.obj context_menu.obj \
+       text_buffer.obj menu_bar.obj buffer_list.obj text_dropdown.obj clipboard.obj \
        
 
 SRC_DIR = ../src
@@ -47,3 +47,7 @@ text_dropdown.obj:$(SRC_DIR)/text_dropdown.cpp $(SRC_DIR)/text_dropdown.h $(SRC_
 
 clipboard.obj:$(SRC_DIR)/clipboard.cpp $(SRC_DIR)/clipboard.h
   cl /c /std:c++17 /Z7 /MT /O2 /I"C:\Program Files\boost_1_73_0" /EHsc $(SRC_DIR)/clipboard.cpp
+
+context_menu.obj:$(SRC_DIR)/context_menu.cpp $(SRC_DIR)/context_menu.h $(SRC_DIR)/base_types.h  $(SRC_DIR)/context_menu.h $(SRC_DIR)/menu_bar.h \
+                 $(SRC_DIR)/editor_actions.h $(SRC_DIR)/editor_data.h
+  cl /c /std:c++17 /Z7 /MT /O2 /I"C:\Program Files\boost_1_73_0" /EHsc $(SRC_DIR)/context_menu.cpp

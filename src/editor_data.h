@@ -3,6 +3,7 @@
 #include "buffer_list.h"
 #include "menu_bar.h"
 #include "text_dropdown.h"
+#include "context_menu.h"
 
 struct EditorData {
   bool running;
@@ -12,6 +13,7 @@ struct EditorData {
   BufferList buffers;
   MenuBar menuBar;
   TextDropdown textDropdown;
+  ContextMenu  contextMenu;
 };
 
 void buildEditorData(EditorData *editorData);

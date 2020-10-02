@@ -30,7 +30,8 @@ void handleInput(Size termSize) {
   if (key == TK_CLOSE)
     editorData.running = false;
   if (!handleInputMenuBar(&editorData, key, termSize)
-  &&  !handleInputTextDropdown(&editorData, key, termSize))
+  &&  !handleInputTextDropdown(&editorData, key, termSize)
+  &&  !handleInputContextMenu(&editorData, key))
     handleInputBufferList(&(editorData.buffers), key, termSize, editorData.lineNums);
 }
 
@@ -42,6 +43,7 @@ void draw(Size termSize) {
   drawBufferList(&(editorData.buffers), {termSize.width, termSize.height}, editorData.menuBar.clicked_opt == -1, editorData.lineNums);
   drawMenuBar(&(editorData.menuBar), termSize);
   drawTextDropdown(&editorData, termSize);
+  drawContextMenu(&(editorData.contextMenu));
   terminal_refresh();
 }
 

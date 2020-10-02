@@ -6,7 +6,6 @@
 #define vector std::vector
 
 class EditorData;
-class ColorPalette;
 
 struct MenuFunction {
   std::string name;

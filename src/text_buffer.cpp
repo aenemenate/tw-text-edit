@@ -521,9 +521,9 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
 	buf->offs.y -= size.height;
 	break;
       case (TK_MOUSE_SCROLL):
-        while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
+        while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
           ++newLines;
-          ++pos;
+          ++pos;
         }
         if (terminal_check(TK_MOUSE_LEFT)) {
 	  buf->offs.y -= terminal_state(TK_MOUSE_WHEEL) * scrollMult;
@@ -540,23 +540,47 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
       default:
         break;
   }
+  if (terminal_state(TK_MOUSE_Y) >= buf->pos.y
+  &&  terminal_state(TK_MOUSE_X) >= buf->pos.x
+  &&  terminal_state(TK_MOUSE_Y) < buf->pos.y + size.height
+  &&  terminal_state(TK_MOUSE_X) < buf->pos.x + size.width)
+  {
   if (key == TK_MOUSE_LEFT) {
-    start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
-    int act_pos = start_pos;
-    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0); ++buf->caret_pos) {
-      if (buf->buffer[buf->caret_pos] == '\n')
-        break;
-      if (buf->buffer[buf->caret_pos] == '\t')
-        act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
-      else
-        ++act_pos;
+    while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
+
+      ++newLines;
+      ++pos;
+
+    }
+    if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
+      buf->caret_pos = buf->buffer.length();
+    else {
+      start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
+      int act_pos = start_pos;
+      for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
+        if (buf->buffer[buf->caret_pos] == '\n')
+          break;
+        if (buf->buffer[buf->caret_pos] == '\t')
+          act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
+        else
+          ++act_pos;
+      }
     }
     buf->caret_sel_pos = buf->caret_pos;
   }
   if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
+    while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
+
+      ++newLines;
+      ++pos;
+
+    }
+    if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
+      buf->caret_pos = buf->buffer.length();
+    else {
     start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
     int act_pos = start_pos;
-    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0); ++buf->caret_pos) {
+    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
       if (buf->buffer[buf->caret_pos] == '\n')
         break;
       if (buf->buffer[buf->caret_pos] == '\t')
@@ -565,11 +589,21 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
         ++act_pos;
     }
   }
+  }
   if (terminal_check(TK_MOUSE_LEFT)) {
+    while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
+
+      ++newLines;
+      ++pos;
+
+    }
+    if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
+      buf->caret_pos = buf->buffer.length();
+    else {
     if (buf->offs.y > 0) buf->offs.y = 0;
     start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
     int act_pos = start_pos;
-    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0); ++buf->caret_pos) {
+    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
       if (buf->buffer[buf->caret_pos] == '\n')
         break;
       if (buf->buffer[buf->caret_pos] == '\t')
@@ -578,7 +612,8 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
         ++act_pos;
     }
   }
-
+  }
+  }
   if (terminal_check(TK_WCHAR))
     buf->insertChar((char)terminal_state(TK_WCHAR), size, lineNums);
   return false;

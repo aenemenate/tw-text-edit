@@ -14,4 +14,5 @@ void buildEditorData(EditorData *editorData) {
   buildMenuBar(&(editorData->menuBar));
   buildBufferList(&(editorData->buffers));
   buildTextDropdown(&(editorData->textDropdown), termSize);
+  buildContextMenu(&(editorData->contextMenu), {0, 0});
 }
