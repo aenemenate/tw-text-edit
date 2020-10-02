@@ -27,7 +27,9 @@ void resetTextDropdown(TextDropdown *textDropdown) {
   textDropdown->inputBuffer.offs = {0, 0};
 }
 
-void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, Size termSize) {
+void drawTextDropdown(EditorData *editorData, Size termSize) {
+  TextDropdown *textDropdown = &(editorData->textDropdown);
+  std::string *workingDirectory = &(editorData->workingDirectory);
   if (textDropdown->showing) {
     drawTextBuffer(&(textDropdown->inputBuffer), {30, 1}, false);
     if (textDropdown->action == TextAction::Open || textDropdown->action == TextAction::Save) {
@@ -63,6 +65,18 @@ void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory,
         *workingDirectory = std::filesystem::path(*workingDirectory).parent_path().string();
       }
     }
+    else if (textDropdown->action == TextAction::Find) {
+      int x_pos = max(0, termSize.width - 30);
+      int occurrences = 0;
+      int pos = 0;
+      if (editorData->buffers.textBuffers[editorData->buffers.cur].buffer != "" && textDropdown->inputBuffer.buffer != "") {
+        while ((pos = editorData->buffers.textBuffers[editorData->buffers.cur].buffer.find(textDropdown->inputBuffer.buffer, pos )) != std::string::npos) {
+          ++ occurrences;
+          pos += textDropdown->inputBuffer.buffer.length();
+        }
+      }
+      terminal_print(x_pos,0,std::string{"Occurrences: " + std::to_string(occurrences)}.c_str());
+    }
   }
 }
 
@@ -74,6 +88,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
       std::string filename;
       std::string inputText = editorData->textDropdown.inputBuffer.buffer;
       std::string illegalChars = "\\/:?\"<>|";
+
       switch (editorData->textDropdown.action) {
         case TextAction::Open:
         case TextAction::Save:
@@ -132,9 +147,12 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
             }
           }
           break;
+
         case TextAction::Find:
           // highlight found text, then enter mode where user can press left and right to jump to instances
+          editorData->buffers.textBuffers[editorData->buffers.cur].find_text = inputText;
           break;
+
         case TextAction::FindAndReplace:
           // prompt for replace text
           break;

@@ -13,5 +13,6 @@ void CloseFile(EditorData*);
 void Cut(EditorData*);
 void Copy(EditorData*);
 void Paste(EditorData*);
+void StartFind(EditorData*);
 
 void ToggleLineNums(EditorData*);

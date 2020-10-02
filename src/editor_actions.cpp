@@ -94,6 +94,12 @@ void Paste(EditorData *editorData) {
   curFile->paste(termSize, editorData->lineNums);
 }
 
+void StartFind(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) return;
+  editorData->textDropdown.showing = true;
+  editorData->textDropdown.action = TextAction::Find;
+  resetTextDropdown(&(editorData->textDropdown));
+}
 
 void ToggleLineNums(EditorData *editorData) {
   editorData->lineNums = !editorData->lineNums;

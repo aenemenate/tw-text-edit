@@ -21,6 +21,6 @@ void buildTextDropdown(TextDropdown *textDropdown, Size termSize);
 
 void resetTextDropdown(TextDropdown *textDropdown);
 
-void drawTextDropdown(TextDropdown *textDropdown, std::string *workingDirectory, Size termSize);
+void drawTextDropdown(EditorData *editorData, Size termSize);
 
 bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize);
