@@ -11,6 +11,7 @@
 #include "editor_data.h"
 #include "base_types.h"
 #include "editor_actions.h"
+#include "status_bar.h"
 
 EditorData editorData;
 
@@ -32,7 +33,7 @@ void handleInput(Size termSize) {
   if (!handleInputMenuBar(&editorData, key, termSize)
   &&  !handleInputTextDropdown(&editorData, key, termSize)
   &&  !handleInputContextMenu(&editorData, key))
-    handleInputBufferList(&(editorData.buffers), key, termSize, editorData.lineNums);
+    handleInputBufferList(&(editorData.buffers), key, {termSize.width, termSize.height - 1}, editorData.lineNums);
 }
 
 void update(Size termSize) {
@@ -40,10 +41,11 @@ void update(Size termSize) {
 
 void draw(Size termSize) {
   terminal_clear();
-  drawBufferList(&(editorData.buffers), {termSize.width, termSize.height}, editorData.menuBar.clicked_opt == -1, editorData.lineNums);
+  drawBufferList(&(editorData.buffers), {termSize.width, termSize.height - 1}, editorData.menuBar.clicked_opt == -1, editorData.lineNums);
   drawMenuBar(&(editorData.menuBar), termSize);
   drawTextDropdown(&editorData, termSize);
   drawContextMenu(&(editorData.contextMenu));
+  drawStatusBar(&editorData, termSize);
   terminal_refresh();
 }
 

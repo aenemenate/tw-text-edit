@@ -1,7 +1,6 @@
 #include "text_buffer.h"
 #include "../include/BearLibTerminal.h"
 #include "clipboard.h"
-
 #include <ctype.h>
 #include <vector>
 
@@ -626,6 +625,7 @@ void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
     updateBufVec(buf);
   }
   terminal_color(term_color = color_from_name("workspacedefaultfg"));
+  terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
   for (int i = buf->pos.x; i < buf->pos.x + size.width; ++i)
     for (int j = buf->pos.y; j < buf->pos.y + size.height; ++j) {
       terminal_put(i, j, ' ');
