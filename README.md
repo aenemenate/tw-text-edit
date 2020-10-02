@@ -12,7 +12,7 @@ A barebone text editor written in C++.
 - customizeable color themes
 
 ### To be added very soon
-- more navigation options (select cursor w/ mouse, ctrl-move, Home, End, etc.)
+- more navigation options (select cursor w/ mouse, * ctrl-move, Home, End, etc.)
 - open directories in buffers
 - call batch files from in the editor
 - syntax highlighting for more languages (ini files, makefiles, batch files)
