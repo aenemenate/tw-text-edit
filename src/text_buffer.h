@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include "base_types.h"
+#include <string>
 
 class ColorPalette;
 
