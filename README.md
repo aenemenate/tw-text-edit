@@ -21,3 +21,7 @@ A barebone text editor written in C++.
 - track git diffs in folder
 - symbol tracking for C++
 - autocomplete
+
+### To definitely be added later
+- Linux support
+- language highlighting extension files
