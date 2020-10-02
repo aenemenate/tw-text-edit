@@ -10,9 +10,10 @@ A barebone text editor written in C++.
 - copy / paste
 - highlight c++ keywords, prepocessor statements, strings, chars, and comments
 - customizeable color themes
+- Ctrl move cursor, Home, End, Scroll w/ mouse
+- Page Up, Page Down
 
 ### To be added very soon
-- more navigation options (select cursor w/ mouse, * ctrl-move, Home, End, etc.)
 - open directories in buffers
 - call batch files from in the editor
 - syntax highlighting for more languages (ini files, makefiles, batch files)
