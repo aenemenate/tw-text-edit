@@ -33,8 +33,8 @@ void drawBufferList(BufferList *bufferList, Size termSize, bool highlight, bool 
   TextBuffer *currentBuffer = &(bufferList->textBuffers[bufferList->cur]);
   drawTextBuffer(currentBuffer, {termSize.width, termSize.height - currentBuffer->pos.y}, lineNums);
 // draw buffer list at y 1
-  terminal_color("bufferlstfg");
-  terminal_bkcolor("bufferlstbk");
+  terminal_color(color_from_name("bufferlistfg"));
+  terminal_bkcolor(color_from_name("bufferlistbk"));
 // bar bg
   for (int i = 0; i < termSize.width; ++i)
     terminal_put(i, 1, ' ');
@@ -47,15 +47,15 @@ void drawBufferList(BufferList *bufferList, Size termSize, bool highlight, bool 
                              + bufferList->textBuffers[i].name;
     if (highlight && mouse_y_on_bar && mouse_x >= cur_x 
     &&  mouse_x < cur_x + bufferName.length()) {
-      terminal_color("bufferlsthlfg");
-      terminal_bkcolor("bufferlsthlbk");
+      terminal_color(color_from_name("bufferlisthlfg"));
+      terminal_bkcolor(color_from_name("bufferlisthlbk"));
     }
     if (bufferList->cur == i) {
-      terminal_color("bufferlstactfg");
-      terminal_bkcolor("bufferlstactbk");
+      terminal_color(color_from_name("bufferlistactfg"));
+      terminal_bkcolor(color_from_name("bufferlistactbk"));
     }
     cur_x += terminal_print(cur_x, 1, bufferName.c_str()).width + 1;
-    terminal_color("bufferlstfg");
-    terminal_bkcolor("bufferlstbk");
+    terminal_color(color_from_name("bufferlistfg"));
+    terminal_bkcolor(color_from_name("bufferlistbk"));
   }
 }

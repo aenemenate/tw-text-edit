@@ -364,6 +364,12 @@ void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
   }
   int i = 0;
   for (char c : buf->buffer) {
+    if (y + buf->offs.y >= size.height)
+      break;
+    if (y + buf->offs.y < 0
+    ||  x + buf->offs.x < 0
+    ||  x + buf->offs.x >= size.width)
+      continue;
     color_t *color = &(bufVec[i]);
     if (((i >= buf->caret_sel_pos && i < buf->caret_pos) || (i >= buf->caret_pos && i < buf->caret_sel_pos)) 
     &&    buf->caret_pos != buf->caret_sel_pos) {
@@ -400,11 +406,11 @@ void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
   }
 
   terminal_color(color_from_name("workspacedefaultbk"));
-  terminal_bkcolor("workspacedefaultfg");
+  terminal_bkcolor(color_from_name("workspacedefaultfg"));
   Point caret_pos = buf->getCaretPos(buf->caret_pos);
   char prev_char = terminal_pick((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y);
   terminal_put((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y, prev_char);
 
-  terminal_color("workspacedefaultfg");
-  terminal_bkcolor("workspacedefaultbk");
+  terminal_color(color_from_name("workspacedefaultfg"));
+  terminal_bkcolor(color_from_name("workspacedefaultbk"));
 }
