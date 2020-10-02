@@ -6,6 +6,7 @@ A barebone text editor written in C++.
 - Open/Save files
 - Open as many files as you want from the command line
 - Open a file at a specific line from the command line
+- Open a file from the windows explore
 - Line numbers
 - select text, delete it
 - copy / paste
