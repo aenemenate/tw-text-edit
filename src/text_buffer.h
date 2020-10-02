@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_types.h"
+#include "syntax_highlight.h"
 #include <string>
 
 class ColorPalette;
@@ -16,6 +17,7 @@ struct TextBuffer {
   int caret_sel_pos;    // caret_sel_pos
   std::string buffer;   // the buffer itself
   std::string find_text;
+  Syntax syntax;
 
   void backspace(Size size, bool lineNums);
   void insertChar(char c, Size size, bool lineNums);

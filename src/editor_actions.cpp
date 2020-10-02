@@ -19,7 +19,7 @@ void GetOpenFile(EditorData *editorData) {
 }
 
 void OpenFile(std::string name, EditorData *editorData) {
-  std::filesystem::path filename = std::filesystem::path(name);
+  std::filesystem::path filename = std::filesystem::absolute(std::filesystem::path(name));
   std::ifstream filestream(name);
   std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
   if (filestream) {

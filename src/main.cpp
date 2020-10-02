@@ -16,7 +16,13 @@
 EditorData editorData;
 
 void init(int argc, char *argv[]) {
+  std::filesystem::path start_path = std::filesystem::current_path();
   buildEditorData(&editorData);
+  std::filesystem::current_path(std::filesystem::path(_pgmptr).parent_path());
+  terminal_open();
+  terminal_set("window.size=80x32");
+  terminal_refresh();
+  std::filesystem::current_path(start_path);
   if (argc > 1)
   for (int i = 1; i < argc; ++i) {
     std::string arg = std::string{argv[i]};
@@ -37,14 +43,11 @@ void init(int argc, char *argv[]) {
     }
     catch(std::exception ex) {
       if (std::string{argv[1]} != "") {
-        OpenFile(std::filesystem::current_path().string() + arg, &editorData);
+        editorData.workingDirectory = start_path.string();
+        OpenFile(arg, &editorData);
       }
     }
   }
-  std::filesystem::current_path(std::filesystem::path(_pgmptr).parent_path());
-  terminal_open();
-  terminal_set("window.size=80x32");
-  terminal_refresh();
 }
 
 void handleInput(Size termSize) {

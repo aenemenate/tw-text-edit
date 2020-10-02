@@ -122,14 +122,6 @@ void TextBuffer::findPrev(Size size, bool lineNums) {
 void TextBuffer::setOffs(Size size, bool lineNums) {
   Point temp = getCaretPos(caret_pos);
   Point temp2 = getCaretPos(caret_sel_pos);
-  if (temp.x < std::abs(this->offs.x))
-    this->offs.x = -temp.x;
-  if (temp.x >= std::abs(this->offs.x) + size.width - (lineNums ? 4 : 0))
-    this->offs.x = - (temp.x - size.width + (lineNums ? 4 : 0))-1;
-  if (temp.y < std::abs(this->offs.y))
-    this->offs.y = -temp.y;
-  if (temp.y >= std::abs(this->offs.y) + size.height)
-    this->offs.y = - (temp.y - size.height)-1;
   if (temp2.x < std::abs(this->offs.x))
     this->offs.x = -temp2.x;
   if (temp2.x >= std::abs(this->offs.x) + size.width - (lineNums ? 4 : 0))
@@ -138,6 +130,14 @@ void TextBuffer::setOffs(Size size, bool lineNums) {
     this->offs.y = -temp2.y;
   if (temp2.y >= std::abs(this->offs.y) + size.height)
     this->offs.y = - (temp2.y - size.height)-1;
+  if (temp.x < std::abs(this->offs.x))
+    this->offs.x = -temp.x;
+  if (temp.x >= std::abs(this->offs.x) + size.width - (lineNums ? 4 : 0))
+    this->offs.x = - (temp.x - size.width + (lineNums ? 4 : 0))-1;
+  if (temp.y < std::abs(this->offs.y))
+    this->offs.y = -temp.y;
+  if (temp.y >= std::abs(this->offs.y) + size.height)
+    this->offs.y = - (temp.y - size.height)-1;
 }
 
 void TextBuffer::moveCaret(Direction dir, Size size, bool shiftSelect, bool lineNums) {
@@ -227,139 +227,14 @@ TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty,
     caret_sel_pos 	= 0;
   textBuffer.buffer	= buffer;
   textBuffer.find_text   = "";
+  textBuffer.syntax.updateSyntax(&textBuffer, name);
   return textBuffer;
-}
-
-std::vector<color_t> bufVec;
-
-// "syntax highlighting"
-void updateBufVec(TextBuffer *buf) {
-  bufVec.resize(buf->buffer.length());
-  int ix = 0;
-  color_t fg_color = color_from_name("workspacedefaultfg");
-  for (auto c : buf->buffer) {
-    bufVec[ix] = fg_color;
-    ++ix;
-  }
-  if (buf->name.find(".cpp", 0) != std::string::npos 
-  ||  buf->name.find(".h", 0)   != std::string::npos 
-  ||  buf->name.find(".hpp", 0) != std::string::npos
-  ||  buf->name.find(".cxx", 0)	!= std::string::npos) {
-  // prepocessor directives
-  std::vector<std::string> keywords = { "#include", "#pragma once", "#pragma" };
-  for (int i = 0; i < keywords.size(); ++i) {
-    size_t c = -1;
-    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
-      c = buf->buffer.find(keywords[i], c+1);
-      for (int j = c; j < c + keywords[i].length(); ++j) {
-        bufVec[j] = color_from_name("cppdirectives");
-      }
-    }
-  }
-// purple (actions)
-  keywords = { 
-    "#ifndef", "for", "#define", "#endif", "if", "continue", "break", 
-    "using",  "while", "static", "do", "goto", "throw", "return", 
-    "else", "switch", "case", "try", "catch", "delete", "default", 
-    "new" };
-  for (int i = 0; i < keywords.size(); ++i) {
-    std::vector<char> check_chars_end = {'(', ' ', '\n', '\t', ';', '{', '}', ':'};
-    std::vector<char> check_chars_front = {' ', '\n', '\t', ';', '{', '}'};
-    size_t c = -1;
-    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
-      c = buf->buffer.find(keywords[i], c+1);
-      if ((c+keywords[i].length() >= buf->buffer.length() || std::count(check_chars_end.begin(), check_chars_end.end(), buf->buffer[c+keywords[i].length()]))
-      &&  (c-1 < 0 || std::count(check_chars_front.begin(), check_chars_front.end(), buf->buffer[c-1]))) {
-        for (int j = c; j < c + keywords[i].length(); ++j)
-          bufVec[j] = color_from_name("cppstatements");
-      }
-    }
-  }
-// blue (data)
-  keywords = { 
-    "sizeof", "int", "bool", "enum", "static_cast", "template", 
-    "typedef", "typeid", "typename", "mutable", "namespace", "static", 
-    "dynamic_cast", "struct", "inline", "volatile", "char", "union", 
-    "extern", "class", "auto", "this", "long", "double", "float","const", 
-    "unsigned", "protected", "private", "public", "virtual", "void", 
-    "NULL", "nullptr", "true", "false", "friend" };
-  for (int i = 0; i < keywords.size(); ++i) {
-    std::vector<char> check_chars_end = {'>', '<', '=', ')', '(', '[', '-', '{', ' ', ';', '.', '&', ':', ',', '\n', '\t'};
-    std::vector<char> check_chars_front = {'<', '=', ' ', '(', ')', ',', ';', '{', '*', '\n', '\t'};
-    size_t c = -1;
-    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
-      c = buf->buffer.find(keywords[i], c+1);
-      if ((c+keywords[i].length() >= buf->buffer.length() || std::count(check_chars_end.begin(), check_chars_end.end(), buf->buffer[c+keywords[i].length()]))
-      &&  (c-1 < 0 || std::count(check_chars_front.begin(), check_chars_front.end(), buf->buffer[c-1]))) {
-        for (int j = c; j < c + keywords[i].length(); ++j) {
-          bufVec[j] = color_from_name("cppdefinitions");
-        }
-      }
-    }
-  }
-
-// mathematical symbols
-  keywords = { 
-    "{", "}", "(", ")", "*", "&", "/", "+", "-", "=", "!", ">", "<", 
-    ":", ",", "." 
-  };
-  for (int i = 0; i < keywords.size(); ++i) {
-    size_t c = -1;
-    while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
-      c = buf->buffer.find(keywords[i], c+1);
-      for (int j = c; j < c + keywords[i].length(); ++j) {
-        bufVec[j] = color_from_name("cppsymbols");
-      }
-    }
-  }
-
-// yellow: chars
-  ix = 0;
-  bool toggleChar = false;
-  for (auto c : buf->buffer) {
-    fg_color = bufVec[ix];
-    if (c == '\'' && !(buf->buffer[ix-1] == '\\' && buf->buffer[ix-2] != '\\')) {
-      toggleChar = !toggleChar;
-      fg_color = color_from_name("cppchars");
-    }
-    if (toggleChar)
-      fg_color = color_from_name("cppchars");
-    bufVec[ix] = {fg_color};
-    ++ix;
-  }
-// green: comments, strings
-  ix = 0;
-  bool toggleString = false, toggleComment = false, toggleMultiLineComment = false;
-  for (auto c : buf->buffer) {
-    fg_color = bufVec[ix];
-    if (c == '\"' && !(buf->buffer[ix-1] == '\\' && buf->buffer[ix-2] != '\\')) {
-      toggleString = !toggleString;
-      fg_color = color_from_name("cppstrcomments");
-    }
-    else if (c == '/' && ix < buf->buffer.length() - 1 && buf->buffer[ix+1] == '/' && toggleMultiLineComment == false)
-      toggleComment = true;
-    else if (c == '/' && ix < buf->buffer.length() - 1 && buf->buffer[ix+1] == '*')
-      toggleMultiLineComment = true;
-    if (toggleString)
-      fg_color = color_from_name("cppstrcomments");
-    if (toggleComment || toggleMultiLineComment) {
-      if ((toggleComment && ix < buf->buffer.length() - 1 && buf->buffer[ix+1] == '\n') 
-      || (toggleMultiLineComment && c == '/' && ix > 0 && buf->buffer[ix-1] == '*')) {  
-        toggleComment = false;
-        toggleMultiLineComment = false;
-      }
-      fg_color = color_from_name("cppstrcomments");
-    }
-    bufVec[ix] = fg_color;
-    ++ix;
-  }
-  }
 }
 
 void ctrlright(TextBuffer *buf) {
   if (buf->caret_pos < buf->buffer.size() - 1) {
-    std::vector<int> places;
-    std::vector<char> keychars = {
+    vector<int> places;
+    vector<char> keychars = {
       ' ', '\\', '/', '<', '>', '.', ',', '{', '}', '(', ')', '\"', ';', '=', '-', '+', 
       '|', '&', '*', '!', '%', '[', ']', ':', '\n', '\t'
     };
@@ -380,8 +255,8 @@ void ctrlright(TextBuffer *buf) {
 
 void ctrlleft(TextBuffer *buf) {
   if (buf->caret_pos > 0) {
-    std::vector<int> places;
-    std::vector<char> keychars = {
+    vector<int> places;
+    vector<char> keychars = {
       ' ', '\\', '/', '<', '>', '.', ',', '{', '}', '(', ')', '\"', ';', '=', '-', '+', 
       '|', '&', '*', '!', '%', '[', ']', ':', '\n', '\t'
     };
@@ -621,8 +496,8 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
 void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
   color_t term_color;
   color_t term_bkcolor;
-  if (bufVec.size() != buf->buffer.length()) {
-    updateBufVec(buf);
+  if (buf->syntax.bufVec.size() != buf->buffer.length()) {
+    buf->syntax.updateSyntax(buf, buf->name);
   }
   terminal_color(term_color = color_from_name("workspacedefaultfg"));
   terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
@@ -643,7 +518,7 @@ void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
     if (y + buf->offs.y >= size.height)
       break;
     if (y + buf->offs.y >= 0) {
-      color_t *color = &(bufVec[i]);
+      color_t *color = &(buf->syntax.bufVec[i]);
       if (((i >= buf->caret_sel_pos && i < buf->caret_pos) || (i >= buf->caret_pos && i < buf->caret_sel_pos)) 
       &&    buf->caret_pos != buf->caret_sel_pos) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacehlbk"));
