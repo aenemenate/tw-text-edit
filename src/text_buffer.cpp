@@ -474,6 +474,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
   int scrollMult = 4;
   int newLines = 0;
   int pos = 0;
+  int start_pos;
   switch (key) {
       case (TK_RIGHT):
 	buf->moveCaret(Direction::Right, size, terminal_state(TK_SHIFT), lineNums);
@@ -524,7 +525,14 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
           ++newLines;
           ++pos;
         }
-        buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y - ((terminal_state(TK_MOUSE_WHEEL) < 0) ? (scrollMult) : ((buf->getCaretPos(buf->caret_pos).y < newLines - scrollMult) ? -scrollMult : -(newLines-buf->getCaretPos(buf->caret_pos).y))));
+        if (terminal_check(TK_MOUSE_LEFT)) {
+	  buf->offs.y -= terminal_state(TK_MOUSE_WHEEL) * scrollMult;
+          break;
+        }
+        buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y - 
+                           ((terminal_state(TK_MOUSE_WHEEL) < 0) ? (scrollMult) : 
+                             ((buf->getCaretPos(buf->caret_pos).y < newLines - scrollMult) ? 
+                               -scrollMult : -(newLines - buf->getCaretPos(buf->caret_pos).y))));
 	buf->caret_sel_pos = buf->caret_pos;
 	buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
         buf->setOffs(size, lineNums);
@@ -532,6 +540,45 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
       default:
         break;
   }
+  if (key == TK_MOUSE_LEFT) {
+    start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
+    int act_pos = start_pos;
+    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0); ++buf->caret_pos) {
+      if (buf->buffer[buf->caret_pos] == '\n')
+        break;
+      if (buf->buffer[buf->caret_pos] == '\t')
+        act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
+      else
+        ++act_pos;
+    }
+    buf->caret_sel_pos = buf->caret_pos;
+  }
+  if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
+    start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
+    int act_pos = start_pos;
+    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0); ++buf->caret_pos) {
+      if (buf->buffer[buf->caret_pos] == '\n')
+        break;
+      if (buf->buffer[buf->caret_pos] == '\t')
+        act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
+      else
+        ++act_pos;
+    }
+  }
+  if (terminal_check(TK_MOUSE_LEFT)) {
+    if (buf->offs.y > 0) buf->offs.y = 0;
+    start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
+    int act_pos = start_pos;
+    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0); ++buf->caret_pos) {
+      if (buf->buffer[buf->caret_pos] == '\n')
+        break;
+      if (buf->buffer[buf->caret_pos] == '\t')
+        act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
+      else
+        ++act_pos;
+    }
+  }
+
   if (terminal_check(TK_WCHAR))
     buf->insertChar((char)terminal_state(TK_WCHAR), size, lineNums);
   return false;
