@@ -366,24 +366,22 @@ void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
   for (char c : buf->buffer) {
     if (y + buf->offs.y >= size.height)
       break;
-    if (y + buf->offs.y < 0
-    ||  x + buf->offs.x < 0
-    ||  x + buf->offs.x >= size.width)
-      continue;
-    color_t *color = &(bufVec[i]);
-    if (((i >= buf->caret_sel_pos && i < buf->caret_pos) || (i >= buf->caret_pos && i < buf->caret_sel_pos)) 
-    &&    buf->caret_pos != buf->caret_sel_pos) {
-      terminal_bkcolor(term_bkcolor = color_from_name("workspacehlbk"));
+    if (y + buf->offs.y >= 0) {
+      color_t *color = &(bufVec[i]);
+      if (((i >= buf->caret_sel_pos && i < buf->caret_pos) || (i >= buf->caret_pos && i < buf->caret_sel_pos)) 
+      &&    buf->caret_pos != buf->caret_sel_pos) {
+        terminal_bkcolor(term_bkcolor = color_from_name("workspacehlbk"));
+      }
+      if (i == buf->caret_pos && buf->caret_pos > buf->caret_sel_pos
+      ||  i == buf->caret_sel_pos && buf->caret_sel_pos > buf->caret_pos)
+        terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
+      
+      if (term_color != *color) terminal_color(term_color = *color);
+      if (c != '\n' && c != '\t' 
+      &&  x + buf->offs.x < size.width - (lineNums ? 4 : 0) && x + buf->offs.x >= 0 
+      &&  y + buf->offs.y < size.height)
+        terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
     }
-    if (i == buf->caret_pos && buf->caret_pos > buf->caret_sel_pos
-    ||  i == buf->caret_sel_pos && buf->caret_sel_pos > buf->caret_pos)
-      terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
-    
-    if (term_color != *color) terminal_color(term_color = *color);
-    if (c != '\n' && c != '\t' 
-    &&  x + buf->offs.x < size.width - (lineNums ? 4 : 0) && x + buf->offs.x >= 0 
-    &&  y + buf->offs.y < size.height && y + buf->offs.y >= 0)
-      terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
     if (c == '\n') {
       if (buf->buffer[i-1] == '\n')
         terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, ' ');
