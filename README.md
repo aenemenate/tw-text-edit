@@ -12,6 +12,7 @@ A barebone text editor written in C++.
 - customizeable color themes
 - Ctrl move cursor, Home, End, Scroll w/ mouse
 - Page Up, Page Down
+- Left click, select text with mouse
 
 ### To be added very soon
 - open directories in buffers
