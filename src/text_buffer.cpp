@@ -294,7 +294,7 @@ void ctrlup(TextBuffer *buf) {
 
 void ctrldown(TextBuffer *buf) {
   int i = 1;
-  while (buf->caret_pos + i < buf->buffer.length()) {
+  while (buf->caret_pos + i <= buf->buffer.length()) {
     if (buf->buffer.substr(buf->caret_pos + i, 2) == "\n\n"
     &&  buf->caret_pos + i + 1 != buf->caret_pos)
       break;
@@ -381,7 +381,10 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
 	buf->setOffs(size, lineNums);
 	break;
       case (TK_END):
+        start_pos = buf->caret_pos;
 	buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y+1)-1;
+        if (buf->caret_pos < start_pos)
+          buf->caret_pos = buf->buffer.length();
 	if (!terminal_state(TK_SHIFT))
 	  buf->caret_sel_pos = buf->caret_pos;
 	buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
@@ -421,10 +424,8 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
   {
   if (key == TK_MOUSE_LEFT) {
     while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
-
       ++newLines;
       ++pos;
-
     }
     if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
       buf->caret_pos = buf->buffer.length();
@@ -432,6 +433,10 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
       start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
       int act_pos = start_pos;
       for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
+        if (buf->buffer.length() <= buf->caret_pos) {
+	  buf->caret_pos = buf->buffer.length();
+	  break;
+        }
         if (buf->buffer[buf->caret_pos] == '\n')
           break;
         if (buf->buffer[buf->caret_pos] == '\t')
@@ -455,7 +460,11 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
     int act_pos = start_pos;
     for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
-      if (buf->buffer[buf->caret_pos] == '\n')
+      if (buf->buffer.length() <= buf->caret_pos) {
+	buf->caret_pos = buf->buffer.length();
+	break;
+      }
+        if (buf->buffer[buf->caret_pos] == '\n')
         break;
       if (buf->buffer[buf->caret_pos] == '\t')
         act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
@@ -478,6 +487,10 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
     start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
     int act_pos = start_pos;
     for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
+      if (buf->buffer.length() <= buf->caret_pos) {
+	buf->caret_pos = buf->buffer.length();
+	break;
+      }
       if (buf->buffer[buf->caret_pos] == '\n')
         break;
       if (buf->buffer[buf->caret_pos] == '\t')

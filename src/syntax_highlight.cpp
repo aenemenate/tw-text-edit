@@ -1,5 +1,5 @@
 #include "syntax_highlight.h"
-#include "text_buffer.h"
+#include "text_buffer.h"
 
 // "syntax highlighting"
 void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
@@ -10,7 +10,7 @@ void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
     bufVec[ix] = fg_color;
     ++ix;
   }
-  if (filename.find(".cpp", 0) != std::string::npos 
+  if (filename.find(".cpp", 0) != std::string::npos
   ||  filename.find(".h", 0)   != std::string::npos 
   ||  filename.find(".hpp", 0) != std::string::npos
   ||  filename.find(".cxx", 0)	!= std::string::npos) {
@@ -79,6 +79,26 @@ void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
       for (int j = c; j < c + keywords[i].length(); ++j) {
         bufVec[j] = color_from_name("cppsymbols");
       }
+    }
+  }
+
+// unclosed brackets
+  vector<char> opens = {
+    '{', '(', '[' 
+  };
+  vector<char> closeds = {
+    '}', ')', ']'
+  };
+  for (int i = 0; i < opens.size(); ++i) {
+    vector<int> st;
+    for (int j = 0; j < buf->buffer.length(); j++) {
+        if (buf->buffer[j] == opens[i] && (j < 1 || buf->buffer[j-1] != '\'')) 
+            st.push_back(j);
+        else if (buf->buffer[j] == closeds[i] && (j < 1 || buf->buffer[j-1] != '\'')) {
+            if (st.empty()) 
+              bufVec[j] = color_from_name("red");
+            else st.pop_back();
+        }
     }
   }
 
