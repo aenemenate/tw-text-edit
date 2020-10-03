@@ -18,7 +18,7 @@ A barebone text editor written in C++.
 - Right click buffer for a context menu
 
 ### To be added very soon
-- directory browser
+- multiple on-screen buffers
 - call batch files from in the editor
 - syntax highlighting for more languages (ini files, makefiles, batch files)
 
