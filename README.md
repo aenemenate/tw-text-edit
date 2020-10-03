@@ -1,21 +1,15 @@
 # tw-text-edit
-A barebone text editor written in C++.
+A barebone terminal-like text editor written in C++.
 
 ## Features
-- Edit multiple buffers
-- Open/Save files
-- Open as many files as you want from the command line
-- Open a file at a specific line from the command line
-- Open a file from the windows explore
+- Open as many files as you want from the command line or windows explorer
+- Edit multiple flies at once
 - Line numbers
-- select text, delete it
+- Convenient text interaction, mouse and keyboard navigation
+- Right click context menu
 - copy / paste
 - highlight c++ keywords, prepocessor statements, strings, chars, and comments
 - customizeable color themes
-- Ctrl move cursor, Home, End, Scroll w/ mouse
-- Page Up, Page Down
-- Left click, select text with mouse
-- Right click buffer for a context menu
 
 ### To be added very soon
 - multiple on-screen buffers
