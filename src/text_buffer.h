@@ -28,6 +28,7 @@ struct TextBuffer {
   void findPrev(Size size, bool lineNums);
   void setOffs(Size size, bool lineNums);
   void moveCaret(Direction dir, Size size, bool shiftSel, bool lineNums);
+  void ctrlMoveCaret(Direction dir, Size size, bool shiftSel, bool lineNums);
   Point getCaretPos(int caret_pos);
   int findNewline(int n);
 };
