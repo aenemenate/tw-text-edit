@@ -1,6 +1,14 @@
 # tw-text-edit
 A barebone terminal-like text editor written in C++.
 
+# Portfolio
+
+![Blank screen](https://i.imgur.com/q6KaHSP.png)
+
+![Blank screen](https://i.imgur.com/FhlUIUo.png)
+
+![Blank screen](https://i.imgur.com/ftp77zq.png)
+
 ## Features
 - Open as many files as you want from the command line or windows explorer
 - Edit multiple flies at once
