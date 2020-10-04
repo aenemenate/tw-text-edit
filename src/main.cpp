@@ -58,10 +58,10 @@ void handleInput(Size termSize) {
   int key = terminal_read();
   if (key == TK_CLOSE)
     editorData.running = false;
-  if (!handleInputMenuBar(&editorData, key, termSize)
-  &&  !handleInputTextDropdown(&editorData, key, termSize)
-  &&  !handleInputContextMenu(&editorData, key))
-    handleInputBufferList(&(editorData.buffers), key, {termSize.width, termSize.height - 1}, editorData.lineNums);
+  if (!handleInputTextDropdown(&editorData, key, termSize))
+    if (!handleInputMenuBar(&editorData, key, termSize))
+      if (!handleInputContextMenu(&editorData, key))
+        handleInputBufferList(&(editorData.buffers), key, {termSize.width, termSize.height - 1}, editorData.lineNums);
 }
 
 void update(Size termSize) {
