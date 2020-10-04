@@ -15,7 +15,7 @@ int MenuDropdown::getDropdownWidth() {
 void buildMenuBar(MenuBar *menuBar) {
   menuBar->clicked_opt = -1;
   menuBar->options.push_back({"File", {{"New            (Ctrl+N)", NewFile}, {"Open           (Ctrl+O)", GetOpenFile}, {"Save          (Ctrl+S)", SaveFile},  {"Save As  (Ctrl+Shift+S)", SaveFileAs},  {"Save All (Ctrl+Shift+A)", SaveAllFiles}, {"Close    (Ctrl+Shift+C)", CloseFile}}});
-  menuBar->options.push_back({"Edit", {/*{"Undo  (Ctrl + U)", nullptr}, {"Redo  (Ctrl + R)", nullptr}, */{"Cut   (Ctrl + X)", Cut}, {"Copy  (Ctrl + C)", Copy}, {"Paste (Ctrl + V)", Paste}, {"Find  (Ctrl + F)", StartFind}}});
+  menuBar->options.push_back({"Edit", {{"Undo  (Ctrl + Z)", Undo}, {"Redo  (Ctrl + Y)", Redo}, {"Cut   (Ctrl + X)", Cut}, {"Copy  (Ctrl + C)", Copy}, {"Paste (Ctrl + V)", Paste}, {"Find  (Ctrl + F)", StartFind}}});
   menuBar->options.push_back({"View", {{"Toggle Line Numbers", ToggleLineNums}/*, "Commands (Ctrl + M)"*/}});
 }
 
@@ -125,10 +125,14 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
       }
       else if (key == TK_F)
 	StartFind(editorData);
-     else if (key == TK_A) {
+      else if (key == TK_A) {
         if (terminal_check(TK_SHIFT))
           SaveAllFiles(editorData);
       }
+      else if (key == TK_Z)
+        Undo(editorData);
+      else if (key == TK_Y)
+        Redo(editorData);
   }
   return return_value;
 }

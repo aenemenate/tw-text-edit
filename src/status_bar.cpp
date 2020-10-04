@@ -27,14 +27,14 @@ void drawStatusBar(EditorData* editorData, Size termSize) {
     terminal_put(i, termSize.height - 1, ' ');
   }
   if (editorData->buffers.textBuffers.size() > 0) {
-    Point cursor_pos = editorData->buffers.textBuffers[editorData->buffers.cur].getCaretPos(editorData->buffers.textBuffers[editorData->buffers.cur].caret_pos);
+    Point cursor_pos = editorData->buffers.textBuffers[editorData->buffers.cur].getCaretPos(editorData->buffers.textBuffers[editorData->buffers.cur].caretPos);
     std::string cursor_pos_str = std::to_string(cursor_pos.x + 1) + "," + std::to_string(cursor_pos.y + 1);
     terminal_print(0, termSize.height - 1, cursor_pos_str.c_str());
     int start_x = cursor_pos_str.length() + 1;
 // print file path
-    terminal_print(start_x, termSize.height - 1, editorData->buffers.textBuffers[editorData->buffers.cur].filepath.c_str());
+    terminal_print(start_x, termSize.height - 1, editorData->buffers.textBuffers[editorData->buffers.cur].filePath.c_str());
 // calculate starting position of lang
-    start_x += editorData->buffers.textBuffers[editorData->buffers.cur].filepath.length();
+    start_x += editorData->buffers.textBuffers[editorData->buffers.cur].filePath.length();
     start_x += 8 - start_x % 8;
 // get file ext
     std::string filename = editorData->buffers.textBuffers[editorData->buffers.cur].name;
@@ -56,9 +56,9 @@ void drawStatusBar(EditorData* editorData, Size termSize) {
     terminal_print(start_x, termSize.height - 1, filename.c_str());
     start_x += filename.length();
     start_x += 8 - start_x % 8;
-    std::string find_text = editorData->buffers.textBuffers[editorData->buffers.cur].find_text;
-    if (find_text != "")
-      terminal_print(start_x, termSize.height - 1, std::string{"Finding: \'" + find_text + "\'"}.c_str());
+    std::string findText = editorData->buffers.textBuffers[editorData->buffers.cur].findText;
+    if (findText != "")
+      terminal_print(start_x, termSize.height - 1, std::string{"Finding: \'" + findText + "\'"}.c_str());
   }
 // print time
   std::string time{getTime()};

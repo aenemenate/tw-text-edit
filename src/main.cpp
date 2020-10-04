@@ -16,34 +16,34 @@
 EditorData editorData;
 
 void init(int argc, char *argv[]) {
-  std::filesystem::path start_path = std::filesystem::current_path();
+  std::filesystem::path startPath = std::filesystem::current_path();
   buildEditorData(&editorData);
   std::filesystem::current_path(std::filesystem::path(_pgmptr).parent_path());
   terminal_open();
   terminal_set("window.size=80x32");
   terminal_refresh();
-  std::filesystem::current_path(start_path);
+  std::filesystem::current_path(startPath);
   if (argc > 1)
   for (int i = 1; i < argc; ++i) {
     std::string arg = std::string{argv[i]};
     try {
       int line = std::stoi(arg,NULL);
       if (editorData.buffers.textBuffers.size() > 0) {
-        int caret_pos = 0;
+        int caretPos = 0;
         int i;
-        while (caret_pos = editorData.buffers.textBuffers.back().buffer.find("\n", i)) {
+        while (caretPos = editorData.buffers.textBuffers.back().buffer.find("\n", i)) {
           ++i;
-          if (editorData.buffers.textBuffers.back().getCaretPos(caret_pos).y + 1 == line)
+          if (editorData.buffers.textBuffers.back().getCaretPos(caretPos).y + 1 == line)
             break;
         }
-       editorData.buffers.textBuffers.back().caret_pos = caret_pos;
-       editorData.buffers.textBuffers.back().caret_sel_pos = editorData.buffers.textBuffers.back().caret_pos;
+       editorData.buffers.textBuffers.back().caretPos = caretPos;
+       editorData.buffers.textBuffers.back().caretSelPos = editorData.buffers.textBuffers.back().caretPos;
        editorData.buffers.textBuffers.back().setOffs({80, 32-3}, false);
       }
     }
     catch(std::exception ex) {
       if (std::string{argv[1]} != "") {
-        editorData.workingDirectory = start_path.string();
+        editorData.workingDirectory = startPath.string();
         OpenFile(arg, &editorData);
         if (std::string{argv[1]} == ".") {
 	  editorData.textDropdown.showing = true;

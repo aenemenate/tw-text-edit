@@ -21,9 +21,9 @@ void buildTextDropdown(TextDropdown *textDropdown, Size termSize) {
 
 void resetTextDropdown(TextDropdown *textDropdown) {
   textDropdown->inputBuffer.buffer = "";
-  textDropdown->inputBuffer.caret_pos = 0;
-  textDropdown->inputBuffer.caret_sel_pos = 0;
-  textDropdown->inputBuffer.cached_x_pos = 0;
+  textDropdown->inputBuffer.caretPos = 0;
+  textDropdown->inputBuffer.caretSelPos = 0;
+  textDropdown->inputBuffer.cachedXPos = 0;
   textDropdown->inputBuffer.offs = {0, 0};
 }
 
@@ -75,6 +75,7 @@ void drawTextDropdown(EditorData *editorData, Size termSize) {
           pos += textDropdown->inputBuffer.buffer.length();
         }
       }
+      // TODO: print this on the status bar as well when finding text
       terminal_print(x_pos,0,std::string{"Occurrences: " + std::to_string(occurrences)}.c_str());
     }
   }
@@ -117,7 +118,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
                   std::ofstream out(filename);
                   if (out) {
                     editorData->buffers.textBuffers[editorData->buffers.cur].name = inputText;
-                    editorData->buffers.textBuffers[editorData->buffers.cur].filepath = editorData->workingDirectory;
+                    editorData->buffers.textBuffers[editorData->buffers.cur].filePath = editorData->workingDirectory;
                     out.close();
                     SaveFile(editorData);
                   }
@@ -134,7 +135,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
                 std::ofstream out(filename);
                 if (out) {
                   editorData->buffers.textBuffers[editorData->buffers.cur].name = inputText;
-                  editorData->buffers.textBuffers[editorData->buffers.cur].filepath = editorData->workingDirectory;
+                  editorData->buffers.textBuffers[editorData->buffers.cur].filePath = editorData->workingDirectory;
                   out.close();
                   SaveFile(editorData);
                 }
@@ -150,7 +151,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
 
         case TextAction::Find:
           // highlight found text, then enter mode where user can press left and right to jump to instances
-          editorData->buffers.textBuffers[editorData->buffers.cur].find_text = inputText;
+          editorData->buffers.textBuffers[editorData->buffers.cur].findText = inputText;
           break;
 
         case TextAction::FindAndReplace:

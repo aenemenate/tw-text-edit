@@ -12,193 +12,252 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
+
+void Action::undo(TextBuffer *buffer, Size size, bool lineNums) {
+  switch (this->type) {
+    case (ActionType::Insert):
+      buffer->caretPos = this->caretPos;
+      buffer->caretSelPos = this->caretPos + this->text.length();
+      buffer->backspace(size, lineNums, false);
+      break;
+    case (ActionType::Delete):
+      buffer->caretPos = this->caretPos;
+      buffer->caretSelPos = this->caretPos;
+      buffer->insert(this->text, size, lineNums, false);
+      break;
+  }
+}
+
+void Action::redo(TextBuffer *buffer, Size size, bool lineNums) {
+  switch (this->type) {
+    case (ActionType::Insert):
+      buffer->caretPos = this->caretPos;
+      buffer->caretSelPos = this->caretPos;
+      buffer->insert(this->text, size, lineNums, false);
+      break;
+    case (ActionType::Delete):
+      buffer->caretPos = this->caretPos;
+      buffer->caretSelPos = this->caretPos + this->text.length();
+      buffer->backspace(size, lineNums, false);
+      break;
+  }
+}
+
 void caretSeek(int amount, TextBuffer *textBuffer) {
-  int caret_pos = textBuffer->caret_pos;
-  for (int i = min(caret_pos, caret_pos+amount); 
-       i < max(caret_pos, caret_pos + amount); 
-       ++textBuffer->caret_pos) {
-    if (textBuffer->buffer[textBuffer->caret_pos] == '\t') {
-      i += 8 - textBuffer->getCaretPos(textBuffer->caret_pos).x % 8;
+  int caretPos = textBuffer->caretPos;
+  for (int i = min(caretPos, caretPos+amount); 
+       i < max(caretPos, caretPos + amount); 
+       ++textBuffer->caretPos) {
+    if (textBuffer->buffer[textBuffer->caretPos] == '\t') {
+      i += 8 - textBuffer->getCaretPos(textBuffer->caretPos).x % 8;
     }
     else ++i;
   }
 }
 
 void ctrlright(TextBuffer *buf, bool shiftSelect) {
-  if (buf->caret_pos < buf->buffer.size() - 1) {
+  if (buf->caretPos < buf->buffer.size() - 1) {
     vector<int> places;
     vector<char> keychars = {
       ' ', '\\', '/', '<', '>', '.', ',', '{', '}', '(', ')', '\"', ';', '=', '-', '+', 
       '|', '&', '*', '!', '%', '[', ']', ':', '\n', '\t'
     };
     for (char c : keychars)
-      for (int i = buf->caret_pos+1; i < buf->buffer.length(); ++i)
+      for (int i = buf->caretPos+1; i < buf->buffer.length(); ++i)
         if (i == buf->buffer.length() - 1 || isalpha(buf->buffer[i]) && std::count(keychars.begin(), keychars.end(), buf->buffer[i-1])) {
           places.push_back(i);
           break;
         }
-    int orig_pos = buf->caret_pos;
+    int orig_pos = buf->caretPos;
     for (int i : places)
-      if (i < buf->caret_pos || buf->caret_pos == orig_pos)
-        buf->caret_pos = i;
+      if (i < buf->caretPos || buf->caretPos == orig_pos)
+        buf->caretPos = i;
     if (!shiftSelect)
-      buf->caret_sel_pos = buf->caret_pos;
+      buf->caretSelPos = buf->caretPos;
   }
 }
 
 void ctrlleft(TextBuffer *buf, bool shiftSelect) {
-  if (buf->caret_pos > 0) {
+  if (buf->caretPos > 0) {
     vector<int> places;
     vector<char> keychars = {
       ' ', '\\', '/', '<', '>', '.', ',', '{', '}', '(', ')', '\"', ';', '=', '-', '+', 
       '|', '&', '*', '!', '%', '[', ']', ':', '\n', '\t'
     };
     for (char c : keychars)
-      for (int i = buf->caret_pos-1; i >= 0; --i)
+      for (int i = buf->caretPos-1; i >= 0; --i)
         if (i == 0 || isalpha(buf->buffer[i]) && std::count(keychars.begin(), keychars.end(), buf->buffer[i-1])) {
           places.push_back(i);
           break;
         }
-    int orig_pos = buf->caret_pos;
+    int orig_pos = buf->caretPos;
     for (int i : places)
-      if (i > buf->caret_pos || buf->caret_pos == orig_pos)
-        buf->caret_pos = i;
+      if (i > buf->caretPos || buf->caretPos == orig_pos)
+        buf->caretPos = i;
     if (!shiftSelect) {
-      buf->caret_sel_pos = buf->caret_pos;
+      buf->caretSelPos = buf->caretPos;
     }
   }
 }
 
 void ctrlup(TextBuffer *buf, bool shiftSelect) {
   int i = -1;
-  while (buf->caret_pos + i >= 0) {
-    if (buf->buffer.substr(buf->caret_pos + i, 2) == "\n\n"
-    &&  buf->caret_pos + i + 1 != buf->caret_pos)
+  while (buf->caretPos + i >= 0) {
+    if (buf->buffer.substr(buf->caretPos + i, 2) == "\n\n"
+    &&  buf->caretPos + i + 1 != buf->caretPos)
       break;
     --i;
   }
-  if (buf->caret_pos + i < 0)
-    buf->caret_pos = 0;
+  if (buf->caretPos + i < 0)
+    buf->caretPos = 0;
   else
-    buf->caret_pos += i + 1;
+    buf->caretPos += i + 1;
   if (!shiftSelect)
-    buf->caret_sel_pos = buf->caret_pos;
+    buf->caretSelPos = buf->caretPos;
 }
 
 void ctrldown(TextBuffer *buf, bool shiftSelect) {
   int i = 1;
-  while (buf->caret_pos + i <= buf->buffer.length()) {
-    if (buf->buffer.substr(buf->caret_pos + i, 2) == "\n\n"
-    &&  buf->caret_pos + i + 1 != buf->caret_pos)
+  while (buf->caretPos + i <= buf->buffer.length()) {
+    if (buf->buffer.substr(buf->caretPos + i, 2) == "\n\n"
+    &&  buf->caretPos + i + 1 != buf->caretPos)
       break;
     ++i;
   }
-  if (buf->caret_pos + i >= buf->buffer.length()) 
-       buf->caret_pos = buf->buffer.length();
-  else buf->caret_pos += i + 1;
+  if (buf->caretPos + i >= buf->buffer.length()) 
+       buf->caretPos = buf->buffer.length();
+  else buf->caretPos += i + 1;
   if (!shiftSelect)
-    buf->caret_sel_pos = buf->caret_pos;
+    buf->caretSelPos = buf->caretPos;
 }
 
 
-void TextBuffer::backspace(Size size, bool lineNums) {
+void TextBuffer::backspace(Size size, bool lineNums, bool undo) {
+  int len = caretPos == caretSelPos ? 1 : max(caretPos, caretSelPos) - min(caretPos, caretSelPos);
+  if (undo) {
+    undos.push_back({ 
+      ActionType::Delete, 
+      buffer.substr(min(caretPos, caretSelPos), len),
+      min(caretPos, caretSelPos)
+    });
+    redos.clear();
+  }
   std::string first_half, second_half;
-  if (caret_pos == caret_sel_pos) {
-    first_half = buffer.substr(0, max(0, caret_pos-1));
-    second_half = buffer.substr(caret_pos, buffer.length() + 1 - caret_pos);
+  if (caretPos == caretSelPos) {
+    first_half = buffer.substr(0, max(0, caretPos-1));
+    second_half = buffer.substr(caretPos, buffer.length() + 1 - caretPos);
     moveCaret(Direction::Left, size, false, lineNums);
   }
-  else if (caret_pos > caret_sel_pos) {
-    first_half = buffer.substr(0, max(0, caret_sel_pos));
-    second_half = buffer.substr(caret_pos, buffer.length() + 1 - caret_pos);
-    caret_pos = caret_sel_pos;
+  else if (caretPos > caretSelPos) {
+    first_half = buffer.substr(0, max(0, caretSelPos));
+    second_half = buffer.substr(caretPos, buffer.length() + 1 - caretPos);
+    caretPos = caretSelPos;
   }
   else {
-    first_half = buffer.substr(0, max(0, caret_pos));
-    second_half = buffer.substr(caret_sel_pos, buffer.length() + 1 - caret_sel_pos);
+    first_half = buffer.substr(0, max(0, caretPos));
+    second_half = buffer.substr(caretSelPos, buffer.length() + 1 - caretSelPos);
   }
   buffer = first_half + second_half;
-  cached_x_pos = getCaretPos(caret_pos).x;
+  cachedXPos = getCaretPos(caretPos).x;
   isDirty = true;
-  caret_sel_pos = caret_pos;
+  caretSelPos = caretPos;
 }
 
-void TextBuffer::insertChar(char c, Size size, bool lineNums) {
-  if (caret_pos != caret_sel_pos)
-    backspace(size, lineNums);
-  std::string first_half = buffer.substr(0, caret_pos);
-  std::string second_half = buffer.substr(caret_pos, buffer.length() + 1 - caret_pos);
-  buffer = first_half + c + second_half;
+void TextBuffer::insert(std::string str, Size size, bool lineNums, bool undo) {
+  if (caretPos != caretSelPos)
+    backspace(size, lineNums, true);
+  if (undo) {
+    undos.push_back({ 
+      ActionType::Insert, 
+      str,
+      caretPos
+    });
+    redos.clear();
+  }
+  std::string first_half = buffer.substr(0, caretPos);
+  std::string second_half = buffer.substr(caretPos, buffer.length() + 1 - caretPos);
+  buffer = first_half + str + second_half;
+  caretPos += str.length() - 1;
   moveCaret(Direction::Right, size, false, lineNums);
-  cached_x_pos = getCaretPos(caret_pos).x;
+  cachedXPos = getCaretPos(caretPos).x;
   isDirty = true;
 }
 
 void TextBuffer::paste(Size size, bool lineNums) {
-  if (caret_pos != caret_sel_pos)
-    backspace(size, lineNums);
-  std::string first_half = buffer.substr(0, caret_pos);
-  std::string second_half = buffer.substr(caret_pos, buffer.length() + 1 - caret_pos);
+  if (caretPos != caretSelPos)
+    backspace(size, lineNums, true);
   std::string clipboard = GetClipboardContents();
-  buffer = first_half + clipboard + second_half;
-  caretSeek(clipboard.length() - 1, this);
-  moveCaret(Direction::Right, size, false, lineNums);
-  cached_x_pos = getCaretPos(caret_pos).x;
-  isDirty = true;
+  insert(clipboard, size, lineNums, true);
 }
 
 void TextBuffer::copy(Size size, bool lineNums) {
-  if (caret_pos != caret_sel_pos) {
-    std::string text_to_copy = buffer.substr(min(caret_pos,caret_sel_pos), max(caret_pos,caret_sel_pos) - min(caret_pos,caret_sel_pos));
+  if (caretPos != caretSelPos) {
+    std::string text_to_copy = buffer.substr(min(caretPos,caretSelPos), max(caretPos,caretSelPos) - min(caretPos,caretSelPos));
     PushTextToClipboard(text_to_copy);
   }
 }
 
 void TextBuffer::cut(Size size, bool lineNums) {
-  if (caret_pos != caret_sel_pos) {
-    std::string text_to_copy = buffer.substr(min(caret_pos,caret_sel_pos), max(caret_pos,caret_sel_pos) - min(caret_pos,caret_sel_pos));
+  if (caretPos != caretSelPos) {
+    std::string text_to_copy = buffer.substr(min(caretPos,caretSelPos), max(caretPos,caretSelPos) - min(caretPos,caretSelPos));
     PushTextToClipboard(text_to_copy);
-    backspace(size, lineNums);
+    backspace(size, lineNums, true);
   }
 }
 
 void TextBuffer::findNext(Size size, bool lineNums) {
-  if (find_text == "")
+  if (findText == "")
     return;
   int i = 1;
-  while (caret_pos + i < buffer.length()) {
-    if (buffer.substr(caret_pos + i, find_text.length()) == find_text
-    &&  caret_pos + i != caret_pos)
+  while (caretPos + i < buffer.length()) {
+    if (buffer.substr(caretPos + i, findText.length()) == findText
+    &&  caretPos + i != caretPos)
       break;
     ++i;
   }
-  if (caret_pos + i < buffer.length())
-    caret_pos += i;
-  caret_sel_pos = caret_pos;
-  caret_sel_pos += find_text.length();
+  if (caretPos + i < buffer.length())
+    caretPos += i;
+  caretSelPos = caretPos;
+  caretSelPos += findText.length();
   setOffs(size, lineNums);
 }
 
 void TextBuffer::findPrev(Size size, bool lineNums) {
-  if (find_text == "")
+  if (findText == "")
     return;
   int i = -1;
-  while (caret_pos + i >= 0) {
-    if (buffer.substr(caret_pos + i, find_text.length()) == find_text
-    &&  caret_pos + i != caret_pos)
+  while (caretPos + i >= 0) {
+    if (buffer.substr(caretPos + i, findText.length()) == findText
+    &&  caretPos + i != caretPos)
       break;
     --i;
   }
-  if (caret_pos + i >= 0)
-    caret_pos += i;
-  caret_sel_pos = caret_pos;
-  caret_sel_pos += find_text.length();
+  if (caretPos + i >= 0)
+    caretPos += i;
+  caretSelPos = caretPos;
+  caretSelPos += findText.length();
   setOffs(size, lineNums);
 }
 
+void TextBuffer::undo(Size size, bool lineNums) {
+  if (undos.size() > 0) {
+    undos.back().undo(this, size, lineNums);
+    redos.push_back(undos.back());
+    undos.pop_back();
+  }
+}
+
+void TextBuffer::redo(Size size, bool lineNums) {
+  if (redos.size() > 0) {
+    redos.back().redo(this, size, lineNums);
+    undos.push_back(redos.back());
+    redos.pop_back();
+  }
+}
+
 void TextBuffer::setOffs(Size size, bool lineNums) {
-  Point temp = getCaretPos(caret_pos);
-  Point temp2 = getCaretPos(caret_sel_pos);
+  Point temp = getCaretPos(caretPos);
+  Point temp2 = getCaretPos(caretSelPos);
   if (temp2.x < std::abs(this->offs.x))
     this->offs.x = -temp2.x;
   if (temp2.x >= std::abs(this->offs.x) + size.width - (lineNums ? 4 : 0))
@@ -223,42 +282,42 @@ void TextBuffer::moveCaret(Direction dir, Size size, bool shiftSelect, bool line
   int caret_pos_temp;
   switch (dir) {
     case Direction::Left: 
-      caret_pos -= 1; 
-      if (caret_pos < 0)
-        caret_pos = 0;
-      cached_x_pos = getCaretPos(caret_pos).x;
+      caretPos -= 1; 
+      if (caretPos < 0)
+        caretPos = 0;
+      cachedXPos = getCaretPos(caretPos).x;
       break;
     case Direction::Right: 
-      caret_pos += 1;
-      if (caret_pos > buffer.length())
-        caret_pos = buffer.length();
-      cached_x_pos = getCaretPos(caret_pos).x;
+      caretPos += 1;
+      if (caretPos > buffer.length())
+        caretPos = buffer.length();
+      cachedXPos = getCaretPos(caretPos).x;
       break;
     case Direction::Up:
-      temp_pos = getCaretPos(caret_pos);
+      temp_pos = getCaretPos(caretPos);
       caret_pos_temp = findNewline(max(0, temp_pos.y-1));
-      caret_pos = caret_pos_temp;
-      caretSeek(cached_x_pos, this);
-      caret_pos_check = getCaretPos(caret_pos);
+      caretPos = caret_pos_temp;
+      caretSeek(cachedXPos, this);
+      caret_pos_check = getCaretPos(caretPos);
       if (caret_pos_check.y != max(0, temp_pos.y-1))
-        caret_pos = findNewline(max(0, temp_pos.y))-1;
-      if (caret_pos < 0)
-        caret_pos = 0;
+        caretPos = findNewline(max(0, temp_pos.y))-1;
+      if (caretPos < 0)
+        caretPos = 0;
       break;
     case Direction::Down:
-      temp_pos = getCaretPos(caret_pos);
+      temp_pos = getCaretPos(caretPos);
       caret_pos_temp = findNewline(temp_pos.y+1);
-      caret_pos = caret_pos_temp;
-      caretSeek(cached_x_pos, this);
-      caret_pos_check = getCaretPos(caret_pos);
-      if (caret_pos != buffer.length() && caret_pos_check.y != max(0, temp_pos.y+1))
-        caret_pos = findNewline(max(0, temp_pos.y+2))-1;
-      if (caret_pos <= 0)
-        caret_pos = buffer.length();
+      caretPos = caret_pos_temp;
+      caretSeek(cachedXPos, this);
+      caret_pos_check = getCaretPos(caretPos);
+      if (caretPos != buffer.length() && caret_pos_check.y != max(0, temp_pos.y+1))
+        caretPos = findNewline(max(0, temp_pos.y+2))-1;
+      if (caretPos <= 0)
+        caretPos = buffer.length();
       break;
   }
   if (!shiftSelect)
-    caret_sel_pos = caret_pos;
+    caretSelPos = caretPos;
   setOffs(size, lineNums);
 }
 
@@ -277,24 +336,24 @@ void TextBuffer::ctrlMoveCaret(Direction dir, Size size, bool shiftSel, bool lin
         ctrlright(this, shiftSel);
       break;
   }
-  if (this->caret_pos > this->buffer.length()) {
-    if (this->caret_pos == this->caret_sel_pos)
-      this->caret_sel_pos = this->buffer.length();
-    this->caret_pos = this->buffer.length();
+  if (this->caretPos > this->buffer.length()) {
+    if (this->caretPos == this->caretSelPos)
+      this->caretSelPos = this->buffer.length();
+    this->caretPos = this->buffer.length();
   }  
-  if (this->caret_pos < 0) {
-    if (this->caret_pos == this->caret_sel_pos)
-      this->caret_sel_pos = 0;
-    this->caret_pos = 0;
+  if (this->caretPos < 0) {
+    if (this->caretPos == this->caretSelPos)
+      this->caretSelPos = 0;
+    this->caretPos = 0;
   }
-  this->cached_x_pos = this->getCaretPos(this->caret_pos).x;
+  this->cachedXPos = this->getCaretPos(this->caretPos).x;
   this->setOffs(size, lineNums);
 }
 
-Point TextBuffer::getCaretPos(int caret_pos) {
+Point TextBuffer::getCaretPos(int caretPos) {
     Point pos = {0,0};
     for (int i = 0; i < buffer.length() + 1; ++i) {
-      if (caret_pos == i)
+      if (caretPos == i)
         return pos;
       if (i < buffer.length() && buffer[i] == '\n') {
         pos.y += 1;
@@ -318,21 +377,21 @@ int TextBuffer::findNewline(int n) {
   return 0;
 }
 
-TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty, 
+TextBuffer buildTextBuffer(std::string name, std::string filePath, bool isDirty, 
                      Point offs, Point pos, std::string buffer) {
   TextBuffer textBuffer;
   textBuffer.name 	= name;
-  textBuffer.filepath 	= filepath;
+  textBuffer.filePath 	= filePath;
   textBuffer.isDirty 	= isDirty;
   textBuffer.offs 	= offs;
   textBuffer.pos	= pos;
   textBuffer.
-    cached_x_pos 	= 0;
-  textBuffer.caret_pos 	= 0;
+    cachedXPos 	= 0;
+  textBuffer.caretPos 	= 0;
   textBuffer.
-    caret_sel_pos 	= 0;
+    caretSelPos 	= 0;
   textBuffer.buffer	= buffer;
-  textBuffer.find_text   = "";
+  textBuffer.findText   = "";
   textBuffer.syntax.updateSyntax(&textBuffer, name);
   return textBuffer;
 }
@@ -381,29 +440,29 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
       case (TK_RETURN):
       case (TK_KP_ENTER):
 	if (enterEscapes) return true;
-	buf->insertChar('\n', size, lineNums);
+	buf->insert("\n", size, lineNums, true);
 	break;
       case (TK_TAB):
-	buf->insertChar('\t', size, lineNums);
+	buf->insert("\t", size, lineNums, true);
 	break;
       case (TK_BACKSPACE):
-	buf->backspace(size, lineNums);
+	buf->backspace(size, lineNums, true);
 	break;
       case (TK_HOME):
-	buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y);
+	buf->caretPos = buf->findNewline(buf->getCaretPos(buf->caretPos).y);
 	if (!terminal_state(TK_SHIFT))
-	  buf->caret_sel_pos = buf->caret_pos;
-        buf->cached_x_pos = 0;
+	  buf->caretSelPos = buf->caretPos;
+        buf->cachedXPos = 0;
 	buf->setOffs(size, lineNums);
 	break;
       case (TK_END):
-        start_pos = buf->caret_pos;
-	buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y+1)-1;
-        if (buf->caret_pos < start_pos)
-          buf->caret_pos = buf->buffer.length();
+        start_pos = buf->caretPos;
+	buf->caretPos = buf->findNewline(buf->getCaretPos(buf->caretPos).y+1)-1;
+        if (buf->caretPos < start_pos)
+          buf->caretPos = buf->buffer.length();
 	if (!terminal_state(TK_SHIFT))
-	  buf->caret_sel_pos = buf->caret_pos;
-	buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
+	  buf->caretSelPos = buf->caretPos;
+	buf->cachedXPos = buf->getCaretPos(buf->caretPos).x;
         buf->setOffs(size, lineNums);
 	break;
       case (TK_PAGEUP):
@@ -422,12 +481,12 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
 	  buf->offs.y -= terminal_state(TK_MOUSE_WHEEL) * scrollMult;
           break;
         }
-        buf->caret_pos = buf->findNewline(buf->getCaretPos(buf->caret_pos).y - 
+        buf->caretPos = buf->findNewline(buf->getCaretPos(buf->caretPos).y - 
                            ((terminal_state(TK_MOUSE_WHEEL) < 0) ? (scrollMult) : 
-                             ((buf->getCaretPos(buf->caret_pos).y < newLines - scrollMult) ? 
-                               -scrollMult : -(newLines - buf->getCaretPos(buf->caret_pos).y))));
-	buf->caret_sel_pos = buf->caret_pos;
-	buf->cached_x_pos = buf->getCaretPos(buf->caret_pos).x;
+                             ((buf->getCaretPos(buf->caretPos).y < newLines - scrollMult) ? 
+                               -scrollMult : -(newLines - buf->getCaretPos(buf->caretPos).y))));
+	buf->caretSelPos = buf->caretPos;
+	buf->cachedXPos = buf->getCaretPos(buf->caretPos).x;
         buf->setOffs(size, lineNums);
 	break;
       default:
@@ -444,24 +503,24 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
       ++pos;
     }
     if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
-      buf->caret_pos = buf->buffer.length();
+      buf->caretPos = buf->buffer.length();
     else {
       start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
       int act_pos = start_pos;
-      for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
-        if (buf->buffer.length() <= buf->caret_pos) {
-	  buf->caret_pos = buf->buffer.length();
+      for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caretPos) {
+        if (buf->buffer.length() <= buf->caretPos) {
+	  buf->caretPos = buf->buffer.length();
 	  break;
         }
-        if (buf->buffer[buf->caret_pos] == '\n')
+        if (buf->buffer[buf->caretPos] == '\n')
           break;
-        if (buf->buffer[buf->caret_pos] == '\t')
-          act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
+        if (buf->buffer[buf->caretPos] == '\t')
+          act_pos += 8 - buf->getCaretPos(buf->caretPos).x % 8;
         else
           ++act_pos;
       }
     }
-    buf->caret_sel_pos = buf->caret_pos;
+    buf->caretSelPos = buf->caretPos;
   }
   if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
     while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
@@ -471,19 +530,19 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
 
     }
     if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
-      buf->caret_pos = buf->buffer.length();
+      buf->caretPos = buf->buffer.length();
     else {
     start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
     int act_pos = start_pos;
-    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
-      if (buf->buffer.length() <= buf->caret_pos) {
-	buf->caret_pos = buf->buffer.length();
+    for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caretPos) {
+      if (buf->buffer.length() <= buf->caretPos) {
+	buf->caretPos = buf->buffer.length();
 	break;
       }
-        if (buf->buffer[buf->caret_pos] == '\n')
+        if (buf->buffer[buf->caretPos] == '\n')
         break;
-      if (buf->buffer[buf->caret_pos] == '\t')
-        act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
+      if (buf->buffer[buf->caretPos] == '\t')
+        act_pos += 8 - buf->getCaretPos(buf->caretPos).x % 8;
       else
         ++act_pos;
     }
@@ -497,20 +556,20 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
 
     }
     if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
-      buf->caret_pos = buf->buffer.length();
+      buf->caretPos = buf->buffer.length();
     else {
     if (buf->offs.y > 0) buf->offs.y = 0;
     start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
     int act_pos = start_pos;
-    for (buf->caret_pos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caret_pos) {
-      if (buf->buffer.length() <= buf->caret_pos) {
-	buf->caret_pos = buf->buffer.length();
+    for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caretPos) {
+      if (buf->buffer.length() <= buf->caretPos) {
+	buf->caretPos = buf->buffer.length();
 	break;
       }
-      if (buf->buffer[buf->caret_pos] == '\n')
+      if (buf->buffer[buf->caretPos] == '\n')
         break;
-      if (buf->buffer[buf->caret_pos] == '\t')
-        act_pos += 8 - buf->getCaretPos(buf->caret_pos).x % 8;
+      if (buf->buffer[buf->caretPos] == '\t')
+        act_pos += 8 - buf->getCaretPos(buf->caretPos).x % 8;
       else
         ++act_pos;
     }
@@ -518,7 +577,7 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscape
   }
   }
   if (terminal_check(TK_WCHAR))
-    buf->insertChar((char)terminal_state(TK_WCHAR), size, lineNums);
+    buf->insert(std::string{ (char)terminal_state(TK_WCHAR) }, size, lineNums, true);
   return false;
 }
 
@@ -548,12 +607,12 @@ void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
       break;
     if (y + buf->offs.y >= 0) {
       color_t *color = &(buf->syntax.bufVec[i]);
-      if (((i >= buf->caret_sel_pos && i < buf->caret_pos) || (i >= buf->caret_pos && i < buf->caret_sel_pos)) 
-      &&    buf->caret_pos != buf->caret_sel_pos) {
+      if (((i >= buf->caretSelPos && i < buf->caretPos) || (i >= buf->caretPos && i < buf->caretSelPos)) 
+      &&    buf->caretPos != buf->caretSelPos) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacehlbk"));
       }
-      if (i == buf->caret_pos && buf->caret_pos > buf->caret_sel_pos
-      ||  i == buf->caret_sel_pos && buf->caret_sel_pos > buf->caret_pos)
+      if (i == buf->caretPos && buf->caretPos > buf->caretSelPos
+      ||  i == buf->caretSelPos && buf->caretSelPos > buf->caretPos)
         terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
       
       if (term_color != *color) terminal_color(term_color = *color);
@@ -585,9 +644,9 @@ void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums) {
 
   terminal_color(color_from_name("workspacedefaultbk"));
   terminal_bkcolor(color_from_name("workspacedefaultfg"));
-  Point caret_pos = buf->getCaretPos(buf->caret_pos);
-  char prev_char = terminal_pick((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y);
-  terminal_put((lineNums ? 4 : 0) + buf->pos.x + caret_pos.x + buf->offs.x, buf->pos.y + caret_pos.y + buf->offs.y, prev_char);
+  Point caretPos = buf->getCaretPos(buf->caretPos);
+  char prev_char = terminal_pick((lineNums ? 4 : 0) + buf->pos.x + caretPos.x + buf->offs.x, buf->pos.y + caretPos.y + buf->offs.y);
+  terminal_put((lineNums ? 4 : 0) + buf->pos.x + caretPos.x + buf->offs.x, buf->pos.y + caretPos.y + buf->offs.y, prev_char);
 
   terminal_color(color_from_name("workspacedefaultfg"));
   terminal_bkcolor(color_from_name("workspacedefaultbk"));

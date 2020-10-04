@@ -16,4 +16,7 @@ void Copy(EditorData*);
 void Paste(EditorData*);
 void StartFind(EditorData*);
 
+void Undo(EditorData*);
+void Redo(EditorData*);
+
 void ToggleLineNums(EditorData*);

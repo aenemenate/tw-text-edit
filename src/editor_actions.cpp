@@ -34,9 +34,9 @@ void SaveFile(EditorData *editorData) {
       !editorData->buffers.textBuffers[editorData->buffers.cur].isDirty)
     return;
   TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
-  if (curFile->name != "" && curFile->filepath != "") {
-    std::filesystem::path filename = std::filesystem::path(curFile->filepath + '\\' + curFile->name);
-    std::ofstream out(filename);
+  if (curFile->name != "" && curFile->filePath != "") {
+    std::filesystem::path fileName = std::filesystem::path(curFile->filePath + '\\' + curFile->name);
+    std::ofstream out(fileName);
     out << curFile->buffer;
     out.close();
     curFile->isDirty = false;
@@ -87,21 +87,21 @@ void CloseFile(EditorData *editorData) {
 
 void Cut(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) return;
-  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)-1};
   TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
   curFile->cut(termSize, editorData->lineNums);
 }
 
 void Copy(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) return;
-  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)-1};
   TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
   curFile->copy(termSize, editorData->lineNums);
 }
 
 void Paste(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) return;
-  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)-1};
   TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
   curFile->paste(termSize, editorData->lineNums);
 }
@@ -111,6 +111,18 @@ void StartFind(EditorData *editorData) {
   editorData->textDropdown.showing = true;
   editorData->textDropdown.action = TextAction::Find;
   resetTextDropdown(&(editorData->textDropdown));
+}
+
+void Undo(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) return;
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)-1};
+  editorData->buffers.textBuffers[editorData->buffers.cur].undo(termSize, editorData->lineNums);
+}
+
+void Redo(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) return;
+  Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)-1};
+  editorData->buffers.textBuffers[editorData->buffers.cur].redo(termSize, editorData->lineNums);
 }
 
 void ToggleLineNums(EditorData *editorData) {
