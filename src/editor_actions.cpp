@@ -169,9 +169,9 @@ void RunBatchFile(EditorData *editorData) {
     return;
   std::string filePath = editorData->buffers.textBuffers[editorData->buffers.cur].filePath;
 // run the batch file
-  std::string system_call = '\"' + filePath + "\\" + fileName + '\"';
+  std::string system_call = "call " + '\"' + filePath + "\\" + fileName + '\"';
   std::string output = exec(system_call.c_str());
-  editorData->buffers.textBuffers.push_back(buildTextBuffer(fileName.substr(0, dot_ind)+"_log", "", true, {0, 0}, {0, 2}, output));
+  editorData->buffers.textBuffers.push_back(buildTextBuffer(fileName.substr(0, dot_ind-1)+"_log", "", true, {0, 0}, {0, 2}, output));
   editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
 }
 
