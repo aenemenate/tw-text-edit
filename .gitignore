@@ -4,3 +4,4 @@
 *.txt
 
 bin/.vs
+.vscode
