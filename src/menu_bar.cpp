@@ -14,9 +14,36 @@ int MenuDropdown::getDropdownWidth() {
 
 void buildMenuBar(MenuBar *menuBar) {
   menuBar->clicked_opt = -1;
-  menuBar->options.push_back({"File", {{"New            (Ctrl+N)", NewFile}, {"Open           (Ctrl+O)", GetOpenFile}, {"Save           (Ctrl+S)", SaveFile},  {"Save As  (Ctrl+Shift+S)", SaveFileAs},  {"Save All (Ctrl+Shift+A)", SaveAllFiles}, {"Close    (Ctrl+Shift+C)", CloseFile}}});
-  menuBar->options.push_back({"Edit", {{"Undo  (Ctrl + Z)", Undo}, {"Redo  (Ctrl + Y)", Redo}, {"Cut   (Ctrl + X)", Cut}, {"Copy  (Ctrl + C)", Copy}, {"Paste (Ctrl + V)", Paste}, {"Find  (Ctrl + F)", StartFind}}});
-  menuBar->options.push_back({"View", {{"Toggle Line Numbers", ToggleLineNums}/*, "Commands (Ctrl + M)"*/}});
+  menuBar->options.push_back({
+    "File", {
+      { "New            (Ctrl+N)", NewFile }, 
+      { "Open           (Ctrl+O)", GetOpenFile }, 
+      { "Save           (Ctrl+S)", SaveFile },  
+      { "Save As  (Ctrl+Shift+S)", SaveFileAs },  
+      { "Save All (Ctrl+Shift+A)", SaveAllFiles }, 
+      { "Close    (Ctrl+Shift+C)", CloseFile }
+    }
+  });
+  menuBar->options.push_back({
+    "Edit", {
+      { "Undo  (Ctrl + Z)", Undo }, 
+      { "Redo  (Ctrl + Y)", Redo }, 
+      { "Cut   (Ctrl + X)", Cut }, 
+      { "Copy  (Ctrl + C) ", Copy }, 
+      { "Paste (Ctrl + V)", Paste }, 
+      { "Find  (Ctrl + F)", StartFind }
+    }
+  });
+  menuBar->options.push_back({
+    "View", {
+      { "Toggle Line Numbers (F2)", ToggleLineNums }
+    }
+  });
+  menuBar->options.push_back({
+    "Run", {
+      { "Run Batch File  (F5)", RunBatchFile },
+    }
+  });
 }
 
 void drawMenuBarDropdown(MenuBar *menuBar, Size termSize) {
@@ -134,5 +161,9 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
       else if (key == TK_Y)
         Redo(editorData);
   }
+  if (key == TK_F2)
+    ToggleLineNums(editorData);
+  if (key == TK_F5)
+    RunBatchFile(editorData);
   return return_value;
 }

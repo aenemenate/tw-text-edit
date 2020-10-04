@@ -1,5 +1,4 @@
 @echo off
-
 pushd "%~dp0"
 
 echo .
@@ -9,7 +8,7 @@ IF "%1" == "all" GOTO MakeAll
 :Make
 echo Compiling only changed source files (run 'build all' to compile all src files)
 nmake
-GOTO End
+GOTO end
 
 :MakeAll
 echo Compiling all source files

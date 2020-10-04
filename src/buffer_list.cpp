@@ -14,8 +14,10 @@ void handleInputBufferList(BufferList *bufferList, int key, Size termSize, bool 
   int cur_x = 0;
   if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
     for (int i = 0; i < bufferList->textBuffers.size(); ++i) {
-    std::string bufferName = (bufferList->textBuffers[i].isDirty ? "* " : "") + bufferList->textBuffers[i].name;
-      if (mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + bufferName.length()) {
+    std::string bufferName = bufferList->textBuffers[i].filePath != "" ?
+                             ((bufferList->textBuffers[i].isDirty ? "* " : "") 
+                             + bufferList->textBuffers[i].name) :
+                             ("%" + bufferList->textBuffers[i].name + "%");      if (mouse_y_on_bar && mouse_x >= cur_x && mouse_x < cur_x + bufferName.length()) {
         bufferList->cur = i;
         return;
       }
@@ -43,8 +45,10 @@ void drawBufferList(BufferList *bufferList, Size termSize, bool highlight, bool 
   bool mouse_y_on_bar = terminal_state(TK_MOUSE_Y) == 1;
   int mouse_x = terminal_state(TK_MOUSE_X);
   for (int i = 0; i < bufferList->textBuffers.size(); ++i) {
-    std::string bufferName = (bufferList->textBuffers[i].isDirty ? "* " : "") 
-                             + bufferList->textBuffers[i].name;
+    std::string bufferName = bufferList->textBuffers[i].filePath != "" ?
+                             ((bufferList->textBuffers[i].isDirty ? "* " : "") 
+                             + bufferList->textBuffers[i].name) :
+                             ("%" + bufferList->textBuffers[i].name + "%");
     if (highlight && mouse_y_on_bar && mouse_x >= cur_x 
     &&  mouse_x < cur_x + bufferName.length()) {
       terminal_color(color_from_name("bufferlisthlfg"));

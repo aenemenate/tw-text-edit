@@ -19,4 +19,6 @@ void StartFind(EditorData*);
 void Undo(EditorData*);
 void Redo(EditorData*);
 
+void RunBatchFile(EditorData*);
+
 void ToggleLineNums(EditorData*);

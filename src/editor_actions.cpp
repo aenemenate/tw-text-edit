@@ -5,6 +5,40 @@
 
 #include <filesystem>
 #include <fstream>
+#include <boost/algorithm/string.hpp>
+
+
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
+
+
+
+std::string exec(const char* cmd) {
+
+    std::array<char, 128> buffer;
+
+    std::string result;
+
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd, "r"), _pclose);
+    if (!pipe) {
+
+        throw std::runtime_error("_popen() failed!");
+
+    }
+
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+
+        result += buffer.data();
+
+    }
+
+    return result;
+
+}
 
 void NewFile(EditorData *editorData) {
   editorData->buffers.textBuffers.push_back(buildTextBuffer("New " + std::to_string(editorData->nextFile), "", true, {0, 0}, {0, 2}, ""));
@@ -123,6 +157,22 @@ void Redo(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) return;
   Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)-1};
   editorData->buffers.textBuffers[editorData->buffers.cur].redo(termSize, editorData->lineNums);
+}
+
+void RunBatchFile(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) 
+    return;
+  std::string fileName = editorData->buffers.textBuffers[editorData->buffers.cur].name;
+  int dot_ind = fileName.find('.', 0)+1;
+  std::string ext = fileName.substr(dot_ind, fileName.length() - dot_ind);
+  if (ext != "bat" && ext != "cmd") 
+    return;
+  std::string filePath = editorData->buffers.textBuffers[editorData->buffers.cur].filePath;
+// run the batch file
+  std::string system_call = '\"' + filePath + "\\" + fileName + '\"';
+  std::string output = exec(system_call.c_str());
+  editorData->buffers.textBuffers.push_back(buildTextBuffer(fileName.substr(0, dot_ind)+"_log", "", true, {0, 0}, {0, 2}, output));
+  editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
 }
 
 void ToggleLineNums(EditorData *editorData) {
