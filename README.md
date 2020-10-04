@@ -10,17 +10,16 @@ A barebone terminal-like text editor written in C++.
 - copy / paste
 - highlight c++ keywords, prepocessor statements, strings, chars, and comments
 - customizeable color themes
+- undo / redo
 
-### To be added very soon
+### Things I would like to add:
+- editor settings
+- more input options, like auto indent, block indent, toggle comment, etc.
 - multiple on-screen buffers
 - call batch files from in the editor
 - syntax highlighting for more languages (ini files, makefiles, batch files)
-
-### To potentially be added later
 - track git diffs in folder
 - symbol tracking for C++
 - autocomplete
-
-### To definitely be added later
 - Linux support
 - language highlighting extension files
