@@ -14,7 +14,7 @@ int MenuDropdown::getDropdownWidth() {
 
 void buildMenuBar(MenuBar *menuBar) {
   menuBar->clicked_opt = -1;
-  menuBar->options.push_back({"File", {{"New            (Ctrl+N)", NewFile}, {"Open           (Ctrl+O)", GetOpenFile}, {"Save          (Ctrl+S)", SaveFile},  {"Save As  (Ctrl+Shift+S)", SaveFileAs},  {"Save All (Ctrl+Shift+A)", SaveAllFiles}, {"Close    (Ctrl+Shift+C)", CloseFile}}});
+  menuBar->options.push_back({"File", {{"New            (Ctrl+N)", NewFile}, {"Open           (Ctrl+O)", GetOpenFile}, {"Save           (Ctrl+S)", SaveFile},  {"Save As  (Ctrl+Shift+S)", SaveFileAs},  {"Save All (Ctrl+Shift+A)", SaveAllFiles}, {"Close    (Ctrl+Shift+C)", CloseFile}}});
   menuBar->options.push_back({"Edit", {{"Undo  (Ctrl + Z)", Undo}, {"Redo  (Ctrl + Y)", Redo}, {"Cut   (Ctrl + X)", Cut}, {"Copy  (Ctrl + C)", Copy}, {"Paste (Ctrl + V)", Paste}, {"Find  (Ctrl + F)", StartFind}}});
   menuBar->options.push_back({"View", {{"Toggle Line Numbers", ToggleLineNums}/*, "Commands (Ctrl + M)"*/}});
 }

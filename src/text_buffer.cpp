@@ -17,27 +17,27 @@ void Action::undo(TextBuffer *buffer, Size size, bool lineNums) {
   switch (this->type) {
     case (ActionType::Insert):
       buffer->caretPos = this->caretPos;
-      buffer->caretSelPos = this->caretPos + this->text.length();
+      buffer->caretSelPos = this->caretSelPos + this->text.length();
       buffer->backspace(size, lineNums, false);
       break;
     case (ActionType::Delete):
-      buffer->caretPos = this->caretPos;
-      buffer->caretSelPos = this->caretPos;
+      if (buffer->caretPos != buffer->caretSelPos)
+           buffer->caretPos = min(this->caretPos, this->caretSelPos);
+      else buffer->caretPos = this->caretPos;
+      buffer->caretSelPos = buffer->caretPos;
       buffer->insert(this->text, size, lineNums, false);
       break;
   }
 }
 
 void Action::redo(TextBuffer *buffer, Size size, bool lineNums) {
+  buffer->caretPos = this->caretPos;
+  buffer->caretSelPos = this->caretSelPos;
   switch (this->type) {
     case (ActionType::Insert):
-      buffer->caretPos = this->caretPos;
-      buffer->caretSelPos = this->caretPos;
       buffer->insert(this->text, size, lineNums, false);
       break;
     case (ActionType::Delete):
-      buffer->caretPos = this->caretPos;
-      buffer->caretSelPos = this->caretPos + this->text.length();
       buffer->backspace(size, lineNums, false);
       break;
   }
@@ -138,7 +138,8 @@ void TextBuffer::backspace(Size size, bool lineNums, bool undo) {
     undos.push_back({ 
       ActionType::Delete, 
       buffer.substr(min(caretPos, caretSelPos), len),
-      min(caretPos, caretSelPos)
+      caretPos,
+      caretSelPos
     });
     redos.clear();
   }
@@ -170,7 +171,8 @@ void TextBuffer::insert(std::string str, Size size, bool lineNums, bool undo) {
     undos.push_back({ 
       ActionType::Insert, 
       str,
-      caretPos
+      caretPos,
+      caretSelPos
     });
     redos.clear();
   }

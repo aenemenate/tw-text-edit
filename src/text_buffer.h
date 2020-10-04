@@ -15,6 +15,7 @@ struct Action {
   ActionType type;
   std::string text;
   int caretPos;
+  int caretSelPos;
   void undo(TextBuffer*,Size,bool lineNums);
   void redo(TextBuffer*,Size,bool lineNums);
 };
@@ -25,9 +26,9 @@ struct TextBuffer {
   bool isDirty;         // is the file unsaved
   Point offs;           // draw offs
   Point pos;            // draw pos
-  int cachedXPos;     // x pos to jump to when go to new line
-  int caretPos;        // caret_pos (in terms of string index)
-  int caretSelPos;    // caret_sel_pos
+  int cachedXPos;       // x pos to jump to when go to new line
+  int caretPos;         // caret_pos (in terms of string index)
+  int caretSelPos;      // caret_sel_pos
   std::string buffer;   // the buffer itself
   std::string findText;
   Syntax syntax;
