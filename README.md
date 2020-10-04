@@ -11,7 +11,7 @@ A barebone terminal-like text editor written in C++.
 
 ## Features
 - Open as many files as you want from the command line or windows explorer
-- Edit multiple flies at once
+- Edit multiple files at once
 - Line numbers
 - Convenient text interaction, mouse and keyboard navigation
 - Right click context menu
