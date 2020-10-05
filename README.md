@@ -17,7 +17,7 @@ explorer, mouse support.
 for Windows and Linux, simply so I can use it myself. In order to achieve this 
 end it should be user customizeable, which means extensible syntax highlighting 
 and build pipelines. It will also need to support project files, git operations,
-and posisbly code/folder generation.
+and possibly code/folder generation.
 
 # Portfolio
 
