@@ -4,9 +4,17 @@ I am approaching development in this way: only implementing a feature as
 needed and if I can make a clear statement for its use, or otherwise produce a 
 valid use case.
 
-  I would reccomend this editor to a friend, specifically if they are editing
+  I would recommend this editor to a friend, specifically if they are editing
 C++ files, prefer a simple editor to an IDE, and are willing to implement
 desired features theirself or otherwise wait for me to implement them.
+
+  Niceties: custom & preincluded theme files, integration with windows file
+explorer, mouse support,
+
+  Eventually I would like this to function as a complete development environment
+for Windows and Linux, simply so I can use it myself. In order to achieve this 
+end it should be user customizeable, which means extensible syntax highlighting 
+and build pipelines.
 
 # Portfolio
 
