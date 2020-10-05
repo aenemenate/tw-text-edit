@@ -36,7 +36,11 @@ void buildMenuBar(MenuBar *menuBar) {
   });
   menuBar->options.push_back({
     "View", {
-      { "Toggle Line Numbers (F2)", ToggleLineNums }
+      { "Switch Buffer Left          (Ctrl + PageUp)", SwitchBufferLeft },
+      { "Switch Buffer Right       (Ctrl + PageDown)", SwitchBufferRight },
+      { "Move Buffer Left    (Shift + Ctrl + PageUp)", MoveBufferLeft },
+      { "Move Buffer Right (Shift + Ctrl + PageDown)", MoveBufferRight },
+      { "Toggle Line Numbers                    (F2)", ToggleLineNums }
     }
   });
   menuBar->options.push_back({
@@ -160,6 +164,18 @@ bool handleInputMenuBar(EditorData *editorData, int key, Size termSize) {
         Undo(editorData);
       else if (key == TK_Y)
         Redo(editorData);
+      else if (key == TK_PAGEUP) {
+        if (!terminal_state(TK_SHIFT))
+          SwitchBufferLeft(editorData);
+	else
+	  MoveBufferLeft(editorData);
+      }
+      else if (key == TK_PAGEDOWN) {
+        if (!terminal_state(TK_SHIFT))
+          SwitchBufferRight(editorData);
+	else
+	  MoveBufferRight(editorData);
+      }
   }
   if (key == TK_F2)
     ToggleLineNums(editorData);

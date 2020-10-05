@@ -22,3 +22,7 @@ void Redo(EditorData*);
 void RunBatchFile(EditorData*);
 
 void ToggleLineNums(EditorData*);
+void SwitchBufferLeft(EditorData*);
+void SwitchBufferRight(EditorData*);
+void MoveBufferLeft(EditorData*);
+void MoveBufferRight(EditorData*);
