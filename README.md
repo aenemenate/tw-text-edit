@@ -21,12 +21,14 @@ A barebone terminal-like text editor written in C++.
 - undo / redo
 - call batch files and view a log of the output
 
-### Things I would like to add:
-- editor settings
+### Things I would like to implement:
+- editor settings file
 - more input options, like auto indent, block indent, toggle comment, etc.
 - multiple on-screen buffers
-- syntax highlighting for more languages (ini files, makefiles, batch files)
-- track git diffs in folder
+- more complete directory viewer (move, create, delete files/directories)
+- in-editor terminal
+- syntax highlighting for more languages (makefiles, ini, batch files)
+- git -> (init, add, commit, push, pull, etc.)
 - symbol tracking for C++
 - autocomplete
 - Linux support
