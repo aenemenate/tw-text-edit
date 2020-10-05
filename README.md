@@ -19,12 +19,12 @@ A barebone terminal-like text editor written in C++.
 - highlight c++ keywords, prepocessor statements, strings, chars, and comments
 - customizeable color themes
 - undo / redo
+- call batch files and view a log of the output
 
 ### Things I would like to add:
 - editor settings
 - more input options, like auto indent, block indent, toggle comment, etc.
 - multiple on-screen buffers
-- call batch files from in the editor
 - syntax highlighting for more languages (ini files, makefiles, batch files)
 - track git diffs in folder
 - symbol tracking for C++
