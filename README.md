@@ -14,7 +14,8 @@ explorer, mouse support,
   Eventually I would like this to function as a complete development environment
 for Windows and Linux, simply so I can use it myself. In order to achieve this 
 end it should be user customizeable, which means extensible syntax highlighting 
-and build pipelines.
+and build pipelines. It will also need to support project files, git operations,
+and posisbly code/folder generation.
 
 # Portfolio
 
