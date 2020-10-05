@@ -7,8 +7,8 @@ standard Windows design philosophy, which means file menus, right click context
 menus, and standard key commands. Imo this is what sets my editor apart from
 the current offerings, and why I aimed to create it. It is aimed at a newer
 generation of programmers who have their own built-in expectations when it comes
-to interacting with programs, but would like to experience the same lightning-
-fast and precise editing of yesteryears.
+to interacting with programs, but would like to experience the same lightning-fast 
+and precise editing of yesteryears.
 
   Niceties: custom & preincluded theme files, integration with windows file
 explorer, mouse support.
