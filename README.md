@@ -1,6 +1,6 @@
 # tw-text-edit
   A (currently) Windows-only barebone terminal-like text editor written in C++. 
-I am approaching development in this way: only implementing a feature only as 
+I am approaching development in this way: only implementing a feature as 
 needed and if I can make a clear statement for its use, or otherwise produce a 
 valid use case.
 
