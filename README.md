@@ -1,5 +1,12 @@
 # tw-text-edit
-A barebone terminal-like text editor written in C++.
+  A (currently) Windows-only barebone terminal-like text editor written in C++. 
+I am approaching development in this way: only implementing a feature only as 
+needed and if I can make a clear statement for its use, or otherwise produce a 
+valid use case.
+
+  I would reccomend this editor to a friend, specifically if they are editing
+C++ files, prefer a simple editor to an IDE, and are willing to implement
+desired features theirself or otherwise wait for me to implement them.
 
 # Portfolio
 
@@ -26,7 +33,6 @@ A barebone terminal-like text editor written in C++.
 - more input options, like auto indent, block indent, toggle comment, etc.
 - multiple on-screen buffers
 - more complete directory viewer (move, create, delete files/directories)
-- in-editor terminal
 - syntax highlighting for more languages (makefiles, ini, batch files)
 - git -> (init, add, commit, push, pull, etc.)
 - symbol tracking for C++
