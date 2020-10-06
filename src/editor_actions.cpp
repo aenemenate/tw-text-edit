@@ -173,16 +173,22 @@ void ToggleLineNums(EditorData *editorData) {
   editorData->lineNums = !editorData->lineNums;
 }
 void SwitchBufferLeft(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) 
+    return;
   if (editorData->buffers.cur > 0)
     --editorData->buffers.cur;
 }
 
 void SwitchBufferRight(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) 
+    return;
   if (editorData->buffers.cur < editorData->buffers.textBuffers.size()-1)
     ++editorData->buffers.cur;
 }
 
 void MoveBufferLeft(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) 
+    return;
   vector<TextBuffer> *vec =  &(editorData->buffers.textBuffers);
   if (editorData->buffers.cur < 1)
     return;
@@ -196,6 +202,8 @@ void MoveBufferLeft(EditorData *editorData) {
 }
 
 void MoveBufferRight(EditorData *editorData) {
+  if (editorData->buffers.textBuffers.empty()) 
+    return;
   vector<TextBuffer> *vec =  &(editorData->buffers.textBuffers);
   if (editorData->buffers.cur >= vec->size()-1)
     return;
