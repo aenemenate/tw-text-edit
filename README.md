@@ -4,11 +4,8 @@ I am approaching development in this way: only implementing a feature as
 needed and if I can make a clear statement for its use, or otherwise produce a 
 valid use case. Furthermore, every feature will be implemented according to 
 standard Windows design philosophy, which means file menus, right click context
-menus, and standard key commands. Imo this is what sets my editor apart from
-the current offerings, and why I aimed to create it. It is aimed at a newer
-generation of programmers who have their own built-in expectations when it comes
-to interacting with programs, but would like to experience the same lightning-fast 
-and precise editing of yesteryears.
+menus, and standard key commands. I made it this way because I prefer it this
+way.
 
   Niceties: custom & preincluded theme files, integration with windows file
 explorer, mouse support.
@@ -16,8 +13,13 @@ explorer, mouse support.
   Eventually I would like this to function as a complete development environment
 for Windows and Linux, simply so I can use it myself. In order to achieve this 
 end it should be user customizeable, which means extensible syntax highlighting 
-and build pipelines. It will also need to support project files, git operations,
-and possibly code/folder generation.
+and build pipelines. I plan to implement syntax highlighting using [LSP](https://en.wikipedia.org/wiki/Language_Server_Protocol) 
+It will also need to support project files, git operations, and possibly 
+code/folder generation.
+
+Why did I make this? Because a programmer must program, and reimplementing existing
+technologies in a most likely deficient and honky way is a great way to
+learn!
 
 # Portfolio
 
