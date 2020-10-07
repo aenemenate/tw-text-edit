@@ -4,8 +4,6 @@
 #include "syntax_highlight.h"
 #include <string>
 
-class ColorPalette;
-
 enum ActionType {
   Insert,
   Delete
