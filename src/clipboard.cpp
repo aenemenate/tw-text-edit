@@ -6,11 +6,11 @@ std::string GetClipboardContents() {
   if (OpenClipboard(nullptr)) {
     HANDLE hData = GetClipboardData(CF_TEXT);
     if (hData != nullptr) {
-    char * pszText = static_cast<char*>( GlobalLock(hData) );
-    if (pszText != nullptr)
-      text = pszText;
-    GlobalUnlock(hData);
-    CloseClipboard();
+      char * pszText = static_cast<char*>( GlobalLock(hData) );
+      if (pszText != nullptr)
+        text = pszText;
+      GlobalUnlock(hData);
+      CloseClipboard();
     }
   }
   return text;

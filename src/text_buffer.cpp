@@ -56,15 +56,15 @@ void caretSeek(int amount, TextBuffer *textBuffer) {
 }
 
 void ctrlright(TextBuffer *buf, bool shiftSelect) {
-  if (buf->caretPos < buf->buffer.size() - 1) {
+  if (buf->caretPos < buf->buffer.length()) {
     vector<int> places;
     vector<char> keychars = {
       ' ', '\\', '/', '<', '>', '.', ',', '{', '}', '(', ')', '\"', ';', '=', '-', '+', 
       '|', '&', '*', '!', '%', '[', ']', ':', '\n', '\t'
     };
     for (char c : keychars)
-      for (int i = buf->caretPos+1; i < buf->buffer.length(); ++i)
-        if (i == buf->buffer.length() - 1 || isalpha(buf->buffer[i]) && std::count(keychars.begin(), keychars.end(), buf->buffer[i-1])) {
+      for (int i = buf->caretPos+1; i <= buf->buffer.length(); ++i)
+        if (i == buf->buffer.length() || isalpha(buf->buffer[i]) && std::count(keychars.begin(), keychars.end(), buf->buffer[i-1])) {
           places.push_back(i);
           break;
         }
