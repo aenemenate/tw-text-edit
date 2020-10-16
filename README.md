@@ -1,5 +1,5 @@
 # tw-text-edit
-  A (currently) Windows-only barebone terminal-like text editor written in C++. 
+  A cross-platform barebone terminal-like text editor written in C++.
 I am approaching development in this way: only implementing a feature as 
 needed and if I can make a clear statement for its use, or otherwise produce a 
 valid use case. Furthermore, every feature will be implemented according to 
@@ -45,7 +45,8 @@ learn!
 - editor settings file
 - more input options, like auto indent, block indent, toggle comment, etc.
 - multiple on-screen buffers
-- more complete directory viewer (move, create, delete files/directories)
+- scroll bars
+- more complete directory viewer (move, create, delete files/directories, scroll options)
 - syntax highlighting for more languages (makefiles, ini, batch files)
 - git -> (init, add, commit, push, pull, etc.)
 - symbol tracking for C++
