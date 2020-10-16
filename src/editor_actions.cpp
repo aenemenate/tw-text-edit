@@ -77,8 +77,7 @@ void SaveFile(EditorData *editorData) {
 }
 
 void SaveFileAs(EditorData *editorData) {
-  if (editorData->buffers.textBuffers.empty() ||
-      !editorData->buffers.textBuffers[editorData->buffers.cur].isDirty)
+  if (editorData->buffers.textBuffers.empty())
     return;
   editorData->textDropdown.showing = true;
   editorData->textDropdown.action = TextAction::Save;

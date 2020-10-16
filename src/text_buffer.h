@@ -33,24 +33,24 @@ struct TextBuffer {
   vector<Action> undos;
   vector<Action> redos;
 
-  void backspace(Size size, bool lineNums, bool undo);
-  void insert(std::string str, Size size, bool lineNums, bool undo);
-  void paste(Size size, bool lineNums);
-  void copy(Size size, bool lineNums);
-  void cut(Size size, bool lineNums);
-  void findNext(Size size, bool lineNums);
-  void findPrev(Size size, bool lineNums);
-  void undo(Size size, bool lineNums);
-  void redo(Size size, bool lineNums);
-  void setOffs(Size size, bool lineNums);
-  void moveCaret(Direction dir, Size size, bool shiftSel, bool lineNums);
-  void ctrlMoveCaret(Direction dir, Size size, bool shiftSel, bool lineNums);
+  void backspace(Size bufferSize, bool lineNums, bool undo);
+  void insert(std::string str, Size bufferSize, bool lineNums, bool undo);
+  void paste(Size bufferSize, bool lineNums);
+  void copy(Size bufferSize, bool lineNums);
+  void cut(Size bufferSize, bool lineNums);
+  void findNext(Size bufferSize, bool lineNums);
+  void findPrev(Size bufferSize, bool lineNums);
+  void undo(Size bufferSize, bool lineNums);
+  void redo(Size bufferSize, bool lineNums);
+  void setOffs(Size bufferSize, bool lineNums);
+  void moveCaret(Direction dir, Size bufferSize, bool shiftSel, bool lineNums);
+  void ctrlMoveCaret(Direction dir, Size bufferSize, bool shiftSel, bool lineNums);
   Point getCaretPos(int caret_pos);
   int findNewline(int n);
 };
 
 TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty, Point offs, Point pos, std::string buffer);
 
-bool handleInputTextBuffer(TextBuffer *buf, int key, Size size, bool enterEscapes, bool lineNums); 
+bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enterEscapes, bool lineNums); 
 
-void drawTextBuffer(TextBuffer *buf, Size size, bool lineNums);
+void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums);

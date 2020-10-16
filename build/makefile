@@ -10,7 +10,7 @@ TARGET  = ../bin/tw-text-edit.exe
 all: $(TARGET)
 
 $(TARGET):$(Objs)
- link /out:$@ /DEBUG:FULL /LIBPATH:"C:\Program Files\boost_1_73_0\stage\lib" ..\libs\BearLibTerminal.lib user32.lib $**
+ link /out:$@ /LIBPATH:"C:\Program Files\boost_1_73_0\stage\lib" ..\libs\BearLibTerminal.lib user32.lib $**
 
 # src
 

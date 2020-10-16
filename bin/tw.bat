@@ -1,2 +1,2 @@
 @echo off
-tw-text-edit.exe %*
+call .\tw-text-edit.exe %*
