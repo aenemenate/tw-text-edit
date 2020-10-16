@@ -11,10 +11,17 @@
 #include <string>
 #include <iostream>
 #include "util/filesystem.h"
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#endif
 
 EditorData editorData;
 
 void init(int argc, char *argv[]) {
+#if defined(_WIN32) || defined(_WIN64)
+  FreeConsole();
+#endif
   fs::path startPath = fs::current_path();
   buildEditorData(&editorData);
   fs::current_path(fs::path(_pgmptr).parent_path());
