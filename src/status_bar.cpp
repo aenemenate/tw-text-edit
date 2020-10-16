@@ -1,11 +1,12 @@
 #include "status_bar.h"
 #include "editor_data.h"
-#include "../include/BearLibTerminal.h"
-#include <boost/algorithm/string.hpp>
+#include <BearLibTerminal.h>
 #include <iostream>
 #include <ctime>
 #include <string>
-
+#include <algorithm>
+#include <cctype>
+
 std::string getTime() {
   time_t rawtime;
   struct tm * timeinfo;
@@ -40,7 +41,8 @@ void drawStatusBar(EditorData* editorData, Size termSize) {
     std::string filename = editorData->buffers.textBuffers[editorData->buffers.cur].name;
     int dot_ind = filename.find('.', 0)+1;
     std::string ext = filename.substr(dot_ind, filename.length() - dot_ind);
-    boost::algorithm::to_lower(filename);
+    std::transform(filename.begin(), filename.end(), filename.begin(),
+      [](unsigned char c){ return std::tolower(c); });
 // set string according to extension
     if (ext == "cpp" || ext == "h" || ext == "hpp" || ext == "cxx")
       filename = "C++";

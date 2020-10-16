@@ -1,6 +1,6 @@
 #include "editor_actions.h"
 #include "editor_data.h"
-#include "../include/BearLibTerminal.h"
+#include <BearLibTerminal.h>
 
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))

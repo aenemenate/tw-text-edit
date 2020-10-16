@@ -1,7 +1,4 @@
-*.ilk
-*.pdb
-*.obj
 *.txt
 
-bin/.vs
-.vscode
+build/
+.vscode/

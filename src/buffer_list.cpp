@@ -1,5 +1,5 @@
 #include "buffer_list.h"
-#include "../include/BearLibTerminal.h"
+#include <BearLibTerminal.h>
 
 void buildBufferList(BufferList *bufferList) {
   bufferList->cur = 0;

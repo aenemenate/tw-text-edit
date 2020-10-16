@@ -1,5 +1,5 @@
 #include "text_buffer.h"
-#include "../include/BearLibTerminal.h"
+#include <BearLibTerminal.h>
 #include "clipboard.h"
 #include <ctype.h>
 #include <vector>

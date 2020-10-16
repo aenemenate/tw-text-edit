@@ -1,28 +1,27 @@
 
 #define _AMD64_
 
-#include "../include/BearLibTerminal.h"
+#include <BearLibTerminal.h>
 
 #include "editor_data.h"
 #include "base_types.h"
 #include "editor_actions.h"
 #include "status_bar.h"
 
-#include <windows.h>
 #include <string>
-#include <iostream>
-#include <filesystem>
+#include <iostream>
+#include "util/filesystem.h"
 
 EditorData editorData;
 
 void init(int argc, char *argv[]) {
-  std::filesystem::path startPath = std::filesystem::current_path();
+  fs::path startPath = fs::current_path();
   buildEditorData(&editorData);
-  std::filesystem::current_path(std::filesystem::path(_pgmptr).parent_path());
+  fs::current_path(fs::path(_pgmptr).parent_path());
   terminal_open();
   terminal_set("window.size=80x32");
   terminal_refresh();
-  std::filesystem::current_path(startPath);
+  fs::current_path(startPath);
   if (argc > 1)
   for (int i = 1; i < argc; ++i) {
     std::string arg = std::string{argv[i]};
@@ -78,8 +77,6 @@ void draw(Size termSize) {
 }
 
 int main(int argc, char *argv[]) {
-  FreeConsole();
-
   init(argc, argv);
   Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
   draw(termSize);

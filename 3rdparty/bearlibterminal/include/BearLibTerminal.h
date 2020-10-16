@@ -94,7 +94,7 @@
 #define TK_RBRACKET         0x30 /*  ]  */
 #define TK_BACKSLASH        0x31 /*  \  */
 #define TK_SEMICOLON        0x33 /*  ;  */
-#define TK_APOSTROPHE       0x34 /*  \'  */
+#define TK_APOSTROPHE       0x34 /*  '  */
 #define TK_GRAVE            0x35 /*  `  */
 #define TK_COMMA            0x36 /*  ,  */
 #define TK_PERIOD           0x37 /*  .  */

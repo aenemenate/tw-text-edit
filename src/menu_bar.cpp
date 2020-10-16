@@ -1,7 +1,7 @@
 #include "menu_bar.h"
 #include "editor_actions.h"
 #include "editor_data.h"
-#include "../include/BearLibTerminal.h"
+#include <BearLibTerminal.h>
 
 int MenuDropdown::getDropdownWidth() {
     int biggest_opt = 0;

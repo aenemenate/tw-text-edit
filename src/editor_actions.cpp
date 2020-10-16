@@ -1,11 +1,10 @@
 #include "editor_actions.h"
 #include "editor_data.h"
 #include "text_buffer.h"
-#include "../include/BearLibTerminal.h"
-
-#include <filesystem>
+#include <BearLibTerminal.h>
+
+#include "util/filesystem.h"
 #include <fstream>
-#include <boost/algorithm/string.hpp>
 
 
 #include <cstdio>
@@ -47,7 +46,7 @@ void GetOpenFile(EditorData *editorData) {
 }
 
 void OpenFile(std::string name, EditorData *editorData) {
-  std::filesystem::path filename = std::filesystem::absolute(std::filesystem::path(name));
+  fs::path filename = fs::absolute(fs::path(name));
   std::ifstream filestream(name);
   std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
   if (filestream) {
@@ -63,7 +62,7 @@ void SaveFile(EditorData *editorData) {
     return;
   TextBuffer *curFile = &(editorData->buffers.textBuffers[editorData->buffers.cur]);
   if (curFile->name != "" && curFile->filePath != "") {
-    std::filesystem::path fileName = std::filesystem::path(curFile->filePath + '\\' + curFile->name);
+    fs::path fileName = fs::path(curFile->filePath + '/' + curFile->name);
     std::ofstream out(fileName);
     out << curFile->buffer;
     out.close();
@@ -162,7 +161,7 @@ void RunBatchFile(EditorData *editorData) {
     return;
   std::string filePath = editorData->buffers.textBuffers[editorData->buffers.cur].filePath;
 // run the batch file
-  std::string system_call = '\"' + filePath + "\\" + fileName + '\"';
+  std::string system_call = '\"' + filePath + "/" + fileName + '\"';
   std::string output = exec(system_call.c_str());
   editorData->buffers.textBuffers.push_back(buildTextBuffer(fileName.substr(0, dot_ind-1)+"_log", "", true, {0, 0}, {0, 2}, output));
   editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;

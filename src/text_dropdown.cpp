@@ -1,9 +1,9 @@
 #include "text_dropdown.h"
-#include "../include/BearLibTerminal.h"
+#include <BearLibTerminal.h>
 #include "editor_data.h"
-#include "helpers.h"
-#include "editor_actions.h"
-#include <filesystem>
+#include "util/helpers.h"
+#include "editor_actions.h"
+#include "util/filesystem.h"
 #include <fstream>
 
 #ifndef min
@@ -37,22 +37,22 @@ void drawTextDropdown(EditorData *editorData, Size termSize) {
       terminal_print(min(x_pos, termSize.width - workingDirectory->length()),0,workingDirectory->c_str());
       int i = 1;
       try {
-        for (const auto & entry : std::filesystem::directory_iterator(*workingDirectory + '\\')) {
+        for (const auto & entry : fs::directory_iterator(*workingDirectory + '/')) {
           std::string entry_name = entry.path().filename().string();
           try {
-            using std::filesystem::directory_iterator;
-            directory_iterator(entry.path().string() + '\\');
+            using fs::directory_iterator;
+            directory_iterator(entry.path().string() + '/');
           }
-          catch (std::filesystem::filesystem_error ex) {
+          catch (fs::filesystem_error ex) {
             continue;
           }
           if (entry.is_directory()) {
             terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
-            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{'\\' + entry_name}.c_str());
+            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{'/' + entry_name}.c_str());
             ++i;
           }
         }
-        for (const auto & entry : std::filesystem::directory_iterator(*workingDirectory + '\\')) {
+        for (const auto & entry : fs::directory_iterator(*workingDirectory + '/')) {
           std::string entry_name = entry.path().filename().string();
           if (!entry.is_directory()) {
             terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
@@ -61,8 +61,8 @@ void drawTextDropdown(EditorData *editorData, Size termSize) {
           }
         }
       }
-      catch (std::filesystem::filesystem_error _ex) {
-        *workingDirectory = std::filesystem::path(*workingDirectory).parent_path().string();
+      catch (fs::filesystem_error _ex) {
+        *workingDirectory = fs::path(*workingDirectory).parent_path().string();
       }
     }
     else if (textDropdown->action == TextAction::Find) {
@@ -97,22 +97,22 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
             if(illegalChars.find(*it) != std::string::npos)
               break;
           }
-          filename = editorData->workingDirectory + '\\' + inputText;
+          filename = editorData->workingDirectory + '/' + inputText;
           if (inputText != "" && inputText != "." && isNotAllSpaces(inputText)) {
-            if (std::filesystem::exists(filename)) {
+            if (fs::exists(filename)) {
               if (inputText == "..") {
-                editorData->workingDirectory = std::filesystem::path(editorData->workingDirectory).parent_path().string();
+                editorData->workingDirectory = fs::path(editorData->workingDirectory).parent_path().string();
                 editorData->textDropdown.showing = true;
                 resetTextDropdown(&(editorData->textDropdown));
               }
-              else if (std::filesystem::is_directory(filename)) {
+              else if (fs::is_directory(filename)) {
                 editorData->workingDirectory = filename;
                 editorData->textDropdown.showing = true;
                 resetTextDropdown(&(editorData->textDropdown));
               }
               else {
                 if (editorData->textDropdown.action == TextAction::Open)
-                  OpenFile(editorData->workingDirectory + '\\' + editorData->textDropdown.inputBuffer.buffer, editorData);
+                  OpenFile(editorData->workingDirectory + '/' + editorData->textDropdown.inputBuffer.buffer, editorData);
                 else if (editorData->textDropdown.action == TextAction::Save) {
                   // TODO: move this into save function and pass filename and filepath as parameters
                   std::ofstream out(filename);
@@ -158,7 +158,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
           // prompt for replace text
           break;
       }
-      if (editorData->workingDirectory.back() == '\\')
+      if (editorData->workingDirectory.back() == '/')
         editorData->workingDirectory = editorData->workingDirectory.substr(0, editorData->workingDirectory.length() - 1);
       return true;
     }
