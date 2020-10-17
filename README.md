@@ -1,4 +1,6 @@
 # tw-text-edit
+(Note that though the basic code is there, this only currently builds on windows. 
+ The clipboard code needs to be made cross platform.)
   A cross-platform barebone terminal-like text editor written in C++.
 I am approaching development in this way: only implementing a feature as 
 needed and if I can make a clear statement for its use, or otherwise produce a 
