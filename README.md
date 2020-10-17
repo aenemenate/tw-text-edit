@@ -3,7 +3,7 @@
 Every feature uses a standard key combination, and there is no needless complexity.
 Mouse support is included, but not necessary. All features are accessible
 through the keyboard.
-
+ 
   Niceties: custom & preincluded theme files, integration with windows file
 explorer, runs batch files, mouse support.
 
