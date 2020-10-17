@@ -404,6 +404,11 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
     if (key == TK_V) buf->paste(bufferSize, lineNums);
     if (key == TK_C) buf->copy(bufferSize, lineNums);
     if (key == TK_X) buf->cut(bufferSize, lineNums);
+    if (key == TK_A) {
+      buf->caretSelPos = 0;
+      buf->caretPos = buf->buffer.size();
+      buf->setOffs(bufferSize, lineNums);
+    }
     if (key == TK_RIGHT)
       buf->ctrlMoveCaret(Direction::Right, bufferSize, terminal_state(TK_SHIFT), lineNums);
     if (key == TK_LEFT)
