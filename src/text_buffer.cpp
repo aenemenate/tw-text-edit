@@ -212,16 +212,21 @@ void TextBuffer::findNext(Size bufferSize, bool lineNums) {
   if (findText == "")
     return;
   int i = 1;
+  bool found = false;
+  int old_caret_pos = caretPos;
   while (caretPos + i < buffer.length()) {
     if (buffer.substr(caretPos + i, findText.length()) == findText
-    &&  caretPos + i != caretPos)
+    &&  caretPos + i != caretPos) {
+      found = true;
       break;
+    }
     ++i;
   }
   if (caretPos + i < buffer.length())
     caretPos += i;
   caretSelPos = caretPos;
-  caretSelPos += findText.length();
+  if (found || caretPos == old_caret_pos && caretSelPos + findText.length() <= buffer.length())
+    caretSelPos += findText.length();
   setOffs(bufferSize, lineNums);
 }
 

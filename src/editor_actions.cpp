@@ -3,10 +3,8 @@
 #include "text_buffer.h"
 #include <BearLibTerminal.h>
 
-
 #include "util/filesystem.h"
 #include <fstream>
-
 
 #include <cstdio>
 #include <iostream>

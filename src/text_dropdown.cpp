@@ -89,7 +89,8 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
       std::string filename;
       std::string inputText = editorData->textDropdown.inputBuffer.buffer;
       std::string illegalChars = "\\/:?\"<>|";
-
+      
+      int pos, occurrences;
       switch (editorData->textDropdown.action) {
         case TextAction::Open:
         case TextAction::Save:
@@ -151,9 +152,20 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
 
         case TextAction::Find:
           // highlight found text, then enter mode where user can press left and right to jump to instances
-          editorData->buffers.textBuffers[editorData->buffers.cur].findText = inputText;
-          break;
 
+          occurrences = 0;
+          pos = 0;
+          if (editorData->buffers.textBuffers[editorData->buffers.cur].buffer != "" && editorData->textDropdown.inputBuffer.buffer != "") {
+            while ((pos = editorData->buffers.textBuffers[editorData->buffers.cur].buffer.find(editorData->textDropdown.inputBuffer.buffer, pos )) != std::string::npos) {
+              ++ occurrences;
+              pos += editorData->textDropdown.inputBuffer.buffer.length();
+            }
+          }
+          if (occurrences > 0)
+            editorData->buffers.textBuffers[editorData->buffers.cur].findText = inputText;
+          else
+            editorData->buffers.textBuffers[editorData->buffers.cur].findText = "";
+          break;
         case TextAction::FindAndReplace:
           // prompt for replace text
           break;
