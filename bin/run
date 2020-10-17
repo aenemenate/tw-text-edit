@@ -4,7 +4,7 @@ echo "Running tw-text-edit"
 
 pushd .
 
-cd game
+cd editor
 ../build/tw-text-edit
 
 popd
