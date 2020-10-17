@@ -4,13 +4,9 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project("tw_text_edit")
 
-
-
 # Compiler settings. These might need to be platform specific?
 
 set(CMAKE_CXX_STANDARD 17)
-
-
 
 # Platform specific settings
 
@@ -22,6 +18,10 @@ elseif(UNIX)
   include(cmake/unix.cmake)
 endif()
 
+# Setup clip
+
+add_subdirectory("3rdparty/clip")
+include_directories("3rdparty/clip")
 
 # Setup bearlibterminal
 
@@ -29,11 +29,9 @@ include_directories("3rdparty/bearlibterminal/include")
 
 set(BearLibTerminal_LIBRARIES "BearLibTerminal")
 
-
 # Specify all the code to compile
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-
 
 # Build it all
 add_executable(tw-text-edit ${SOURCES})
