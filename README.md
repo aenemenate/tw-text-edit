@@ -1,19 +1,16 @@
 # tw-text-edit
-  A cross-platform barebone terminal-like text editor written in C++.
-I am approaching development in this way: only implementing a feature as 
-needed and if I can make a clear statement for its use, or otherwise produce a 
-valid use case. Furthermore, every feature will be implemented according to 
-standard Windows design philosophy, which means file menus, right click context
-menus, and standard key commands. I made it this way because I prefer it this
-way.
+  A simple cross-platform barebone faux-terminal text editor written in C++.
+Every feature uses a standard key combination, and there is no needless complexity.
+Mouse support is included, but not necessary. All features are accessible
+through the keyboard.
 
   Niceties: custom & preincluded theme files, integration with windows file
-explorer, mouse support.
+explorer, runs batch files, mouse support.
 
   Eventually I would like this to function as a complete development environment
 for Windows and Linux, simply so I can use it myself. In order to achieve this 
 end it should be user customizeable, which means extensible syntax highlighting 
-and build pipelines. I plan to implement syntax highlighting using [LSP](https://en.wikipedia.org/wiki/Language_Server_Protocol) 
+and build pipelines. I plan to implement syntax highlighting using [LSP](https://en.wikipedia.org/wiki/Language_Server_Protocol). 
 It will also need to support project files, git operations, and possibly 
 code/folder generation.
 
@@ -42,6 +39,7 @@ learn!
 - call batch files and view a log of the output
 
 ### Things I would like to implement:
+- command input, link all editor commands
 - editor settings file
 - more input options, like auto indent, block indent, toggle comment, etc.
 - multiple on-screen buffers
@@ -51,6 +49,5 @@ learn!
 - git -> (init, add, commit, push, pull, etc.)
 - symbol tracking for C++
 - autocomplete
-- Linux support
 - language highlighting extension files
 - ncurses support
