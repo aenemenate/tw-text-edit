@@ -2,7 +2,8 @@
 #include "editor_data.h"
 #include "text_buffer.h"
 #include <BearLibTerminal.h>
-
+
+
 #include "util/filesystem.h"
 #include <fstream>
 
@@ -13,6 +14,7 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include <algorithm>
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -22,10 +24,18 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
+#if defined(_WIN32) || defined(_WIN64)
+#define PCLOSE _pclose
+#define POPEN _popen
+#elif defined(linux)
+#define PCLOSE pclose
+#define POPEN popen
+#endif
+
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
     std::string result;
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd, "r"), _pclose);
+    std::unique_ptr<FILE, decltype(&PCLOSE)> pipe(POPEN(cmd, "r"), PCLOSE);
     if (!pipe)
         throw std::runtime_error("_popen() failed!");
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
@@ -187,11 +197,11 @@ void SwitchBufferRight(EditorData *editorData) {
 void MoveBufferLeft(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) 
     return;
-  vector<TextBuffer> *vec =  &(editorData->buffers.textBuffers);
+  std::vector<TextBuffer> *vec =  &(editorData->buffers.textBuffers);
   if (editorData->buffers.cur < 1)
     return;
-  vector<TextBuffer>::iterator from = vec->begin() + editorData->buffers.cur;
-  vector<TextBuffer>::iterator to = vec->begin() + max(0,editorData->buffers.cur - 1);
+  std::vector<TextBuffer>::iterator from = vec->begin() + editorData->buffers.cur;
+  std::vector<TextBuffer>::iterator to = vec->begin() + max(0,editorData->buffers.cur - 1);
   if (from < to)
     rotate(from, from+1, to+1);
   else if (from > to)
@@ -202,11 +212,11 @@ void MoveBufferLeft(EditorData *editorData) {
 void MoveBufferRight(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) 
     return;
-  vector<TextBuffer> *vec =  &(editorData->buffers.textBuffers);
+  std::vector<TextBuffer> *vec =  &(editorData->buffers.textBuffers);
   if (editorData->buffers.cur >= vec->size()-1)
     return;
-  vector<TextBuffer>::iterator from = vec->begin() + editorData->buffers.cur + 1;
-  vector<TextBuffer>::iterator to = vec->begin() + min(vec->size()-1,editorData->buffers.cur);
+  std::vector<TextBuffer>::iterator from = vec->begin() + editorData->buffers.cur + 1;
+  std::vector<TextBuffer>::iterator to = vec->begin() + min(vec->size()-1,editorData->buffers.cur);
   if (from < to)
     rotate(from, from+1, to+1);
   else if (from > to)

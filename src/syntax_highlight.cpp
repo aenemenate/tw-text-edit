@@ -1,5 +1,7 @@
 #include "syntax_highlight.h"
-#include "text_buffer.h"
+#include "text_buffer.h"
+
+#include <algorithm>
 
 // "syntax highlighting"
 void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
@@ -15,7 +17,7 @@ void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
   ||  filename.find(".hpp", 0) != std::string::npos
   ||  filename.find(".cxx", 0)	!= std::string::npos) {
   // prepocessor directives
-  vector<std::string> keywords = { "#include", "#pragma once", "#pragma" };
+  std::vector<std::string> keywords = { "#include", "#pragma once", "#pragma" };
   for (int i = 0; i < keywords.size(); ++i) {
     size_t c = -1;
     while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
@@ -32,8 +34,8 @@ void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
     "else", "switch", "case", "try", "catch", "delete", "default", 
     "new" };
   for (int i = 0; i < keywords.size(); ++i) {
-    vector<char> check_chars_end = {'(', ' ', '\n', '\t', ';', '{', '}', ':'};
-    vector<char> check_chars_front = {' ', '\n', '\t', ';', '{', '}'};
+    std::vector<char> check_chars_end = {'(', ' ', '\n', '\t', ';', '{', '}', ':'};
+    std::vector<char> check_chars_front = {' ', '\n', '\t', ';', '{', '}'};
     size_t c = -1;
     while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
       c = buf->buffer.find(keywords[i], c+1);
@@ -53,8 +55,8 @@ void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
     "unsigned", "protected", "private", "public", "virtual", "void", 
     "NULL", "nullptr", "true", "false", "friend" };
   for (int i = 0; i < keywords.size(); ++i) {
-    vector<char> check_chars_end = {'>', '<', '=', ')', '(', '[', '-', '{', ' ', ';', '.', '&', ':', ',', '\n', '\t'};
-    vector<char> check_chars_front = {'<', '=', ' ', '(', ')', ',', ';', '{', '*', '\n', '\t'};
+    std::vector<char> check_chars_end = {'>', '<', '=', ')', '(', '[', '-', '{', ' ', ';', '.', '&', ':', ',', '\n', '\t'};
+    std::vector<char> check_chars_front = {'<', '=', ' ', '(', ')', ',', ';', '{', '*', '\n', '\t'};
     size_t c = -1;
     while (buf->buffer.find(keywords[i], c+1) != std::string::npos) {
       c = buf->buffer.find(keywords[i], c+1);
@@ -83,19 +85,25 @@ void Syntax::updateSyntax(TextBuffer *buf, std::string filename) {
   }
 
 // unclosed brackets
-  vector<char> opens = {
+  std::vector<char> opens = {
     '{', '(', '[' 
   };
-  vector<char> closeds = {
+  std::vector<char> closeds = {
     '}', ')', ']'
   };
   for (int i = 0; i < opens.size(); ++i) {
-    vector<int> st;
-    for (int j = 0; j < buf->buffer.length(); j++) {
-        if (buf->buffer[j] == opens[i] && (j < 1 || buf->buffer[j-1] != '\'')) 
-            st.push_back(j);
-        else if (buf->buffer[j] == closeds[i] && (j < 1 || buf->buffer[j-1] != '\'')) {
-            if (st.empty()) 
+    std::vector<int> st;
+
+    for (int j = 0; j < buf->buffer.length(); j++) {
+
+        if (buf->buffer[j] == opens[i] && (j < 1 || buf->buffer[j-1] != '\'')) 
+
+            st.push_back(j);
+
+        else if (buf->buffer[j] == closeds[i] && (j < 1 || buf->buffer[j-1] != '\'')) {
+
+            if (st.empty()) 
+
               bufVec[j] = color_from_name("red");
             else st.pop_back();
         }

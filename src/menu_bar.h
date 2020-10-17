@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include "base_types.h"
-#define vector std::vector
 
 class EditorData;
 
@@ -14,13 +13,13 @@ struct MenuFunction {
 
 struct MenuDropdown {
   std::string name;
-  vector<MenuFunction> options;
+  std::vector<MenuFunction> options;
   int getDropdownWidth();
 };
 
 struct MenuBar {
   int clicked_opt;
-  vector<MenuDropdown> options;
+  std::vector<MenuDropdown> options;
 };
 
 void buildMenuBar(MenuBar *menuBar);

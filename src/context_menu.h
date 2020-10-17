@@ -5,7 +5,7 @@ class EditorData;
 
 struct ContextMenu {
   Point pos;
-  vector<MenuFunction> options;
+  std::vector<MenuFunction> options;
   bool showing;
 };
 

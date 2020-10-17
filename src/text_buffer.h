@@ -30,8 +30,8 @@ struct TextBuffer {
   std::string buffer;   // the buffer itself
   std::string findText;
   Syntax syntax;
-  vector<Action> undos;
-  vector<Action> redos;
+  std::vector<Action> undos;
+  std::vector<Action> redos;
 
   void backspace(Size bufferSize, bool lineNums, bool undo);
   void insert(std::string str, Size bufferSize, bool lineNums, bool undo);

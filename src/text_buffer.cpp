@@ -3,6 +3,7 @@
 #include "clipboard.h"
 #include <ctype.h>
 #include <vector>
+#include <algorithm>
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -57,8 +58,8 @@ void caretSeek(int amount, TextBuffer *textBuffer) {
 
 void ctrlright(TextBuffer *buf, bool shiftSelect) {
   if (buf->caretPos < buf->buffer.length()) {
-    vector<int> places;
-    vector<char> keychars = {
+    std::vector<int> places;
+    std::vector<char> keychars = {
       ' ', '\\', '/', '<', '>', '.', ',', '{', '}', '(', ')', '\"', ';', '=', '-', '+', 
       '|', '&', '*', '!', '%', '[', ']', ':', '\n', '\t'
     };
@@ -79,8 +80,8 @@ void ctrlright(TextBuffer *buf, bool shiftSelect) {
 
 void ctrlleft(TextBuffer *buf, bool shiftSelect) {
   if (buf->caretPos > 0) {
-    vector<int> places;
-    vector<char> keychars = {
+    std::vector<int> places;
+    std::vector<char> keychars = {
       ' ', '\\', '/', '<', '>', '.', ',', '{', '}', '(', ')', '\"', ';', '=', '-', '+', 
       '|', '&', '*', '!', '%', '[', ']', ':', '\n', '\t'
     };

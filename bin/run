@@ -1,11 +1,11 @@
 #!/bin/sh
 
-echo "Running Aztheria and Elendor: Worlds of Dragons"
+echo "Running tw-text-edit"
 
 pushd .
 
 cd game
-../build/A-and-E-Worlds-of-Dragons
+../build/tw-text-edit
 
 popd
 

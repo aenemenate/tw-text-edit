@@ -2,13 +2,11 @@
 #include "text_buffer.h"
 #include <vector>
 
-#define vector std::vector
-
 // BUFFER LIST
 
 struct BufferList {
   int cur;
-  vector<TextBuffer> textBuffers;
+  std::vector<TextBuffer> textBuffers;
 };
 
 void buildBufferList(BufferList *bufferList);

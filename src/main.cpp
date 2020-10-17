@@ -9,9 +9,11 @@
 #include "status_bar.h"
 
 #include <string>
-#include <iostream>
+#include <iostream>
+
 #include "util/filesystem.h"
-
+
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
@@ -24,7 +26,9 @@ void init(int argc, char *argv[]) {
 #endif
   fs::path startPath = fs::current_path();
   buildEditorData(&editorData);
+#if defined(_WIN32) || defined(_WIN64)
   fs::current_path(fs::path(_pgmptr).parent_path());
+#endif
   terminal_open();
   terminal_set("window.size=80x32");
   terminal_refresh();
@@ -42,18 +46,22 @@ void init(int argc, char *argv[]) {
           if (editorData.buffers.textBuffers.back().getCaretPos(caretPos).y + 1 == line)
             break;
         }
-       editorData.buffers.textBuffers.back().caretPos = caretPos;
-       editorData.buffers.textBuffers.back().caretSelPos = editorData.buffers.textBuffers.back().caretPos;
-       editorData.buffers.textBuffers.back().setOffs({80, 32-3}, false);
+ 
+      editorData.buffers.textBuffers.back().caretPos = caretPos;
+ 
+      editorData.buffers.textBuffers.back().caretSelPos = editorData.buffers.textBuffers.back().caretPos;
+ 
+      editorData.buffers.textBuffers.back().setOffs({80, 32-3}, false);
       }
-    }
+    }
+
     catch(std::exception ex) {
       if (std::string{argv[1]} != "") {
         editorData.workingDirectory = startPath.string();
         OpenFile(arg, &editorData);
         if (std::string{argv[1]} == ".") {
-	  editorData.textDropdown.showing = true;
-	  editorData.textDropdown.action = TextAction::Open;
+	      editorData.textDropdown.showing = true;
+	      editorData.textDropdown.action = TextAction::Open;
         }
       }
     }
