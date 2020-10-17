@@ -15,7 +15,11 @@
 
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
+  #include <windows.h>
+#elif defined(linux)
+  #include <libgen.h>         // dirname
+  #include <unistd.h>         // readlink
+  #include <linux/limits.h>   // PATH_MAX
 #endif
 
 EditorData editorData;
@@ -28,6 +32,13 @@ void init(int argc, char *argv[]) {
   buildEditorData(&editorData);
 #if defined(_WIN32) || defined(_WIN64)
   fs::current_path(fs::path(_pgmptr).parent_path());
+#elif defined(linux)
+  char result[PATH_MAX];
+  ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+  const char *path;
+  if (count != -1)
+    path = dirname(result);
+  fs::current_path(fs::path(std::string(path)));
 #endif
   terminal_open();
   terminal_set("window.size=80x32");

@@ -43,11 +43,13 @@ void buildMenuBar(MenuBar *menuBar) {
       { "Toggle Line Numbers                    (F2)", ToggleLineNums }
     }
   });
+#if defined(_WIN32) || defined(_WIN64)
   menuBar->options.push_back({
     "Run", {
       { "Run Batch File  (F5)", RunBatchFile },
     }
   });
+#endif
 }
 
 void drawMenuBarDropdown(MenuBar *menuBar, Size termSize) {

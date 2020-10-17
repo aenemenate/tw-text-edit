@@ -5,7 +5,9 @@ echo "Running tw-text-edit"
 pushd .
 
 cd editor
-../build/tw-text-edit
+mv ../build/tw-text-edit .
+./tw-text-edit
+mv tw-text-edit ../build
 
 popd
 
