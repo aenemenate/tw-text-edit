@@ -18,11 +18,6 @@ elseif(UNIX)
   include(cmake/unix.cmake)
 endif()
 
-# Setup clip
-
-add_subdirectory("3rdparty/clip")
-include_directories("3rdparty/clip")
-
 # Setup bearlibterminal
 
 include_directories("3rdparty/bearlibterminal/include")
