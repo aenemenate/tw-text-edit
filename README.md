@@ -18,6 +18,13 @@ Why did I make this? Because a programmer must program, and reimplementing exist
 technologies in a most likely deficient and honky way is a great way to
 learn!
 
+Dependencies:
+
+All Systems: Boost Serialization static version
+
+Linux only: xsel
+
+
 # Portfolio
 
 ![Blank screen](https://i.imgur.com/q6KaHSP.png)
@@ -39,7 +46,6 @@ learn!
 - call batch files and view a log of the output
 
 ### Things I would like to implement:
-- command input, link all editor commands
 - editor settings file
 - more input options, like auto indent, block indent, toggle comment, etc.
 - multiple on-screen buffers
