@@ -65,7 +65,7 @@ void ctrlright(TextBuffer *buf, bool shiftSelect) {
     };
     for (char c : keychars)
       for (int i = buf->caretPos+1; i <= buf->buffer.length(); ++i)
-        if (i == buf->buffer.length() || isalpha(buf->buffer[i]) && std::count(keychars.begin(), keychars.end(), buf->buffer[i-1])) {
+        if (i == buf->buffer.length() || isalpha(buf->buffer[i-1]) && std::count(keychars.begin(), keychars.end(), buf->buffer[i])) {
           places.push_back(i);
           break;
         }
