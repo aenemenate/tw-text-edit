@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -131,7 +132,6 @@ void ctrldown(TextBuffer *buf, bool shiftSelect) {
   if (!shiftSelect)
     buf->caretSelPos = buf->caretPos;
 }
-
 
 void TextBuffer::backspace(Size bufferSize, bool lineNums, bool undo) {
   int len = caretPos == caretSelPos ? 1 : max(caretPos, caretSelPos) - min(caretPos, caretSelPos);
@@ -264,20 +264,21 @@ void TextBuffer::redo(Size bufferSize, bool lineNums) {
 }
 
 void TextBuffer::setOffs(Size bufferSize, bool lineNums) {
-  Point temp = getCaretPos(caretPos);
-  Point temp2 = getCaretPos(caretSelPos);
+  int padding = ((this->codeBar.GetShowing() ? 1 : 0) + (lineNums ? 4 : 0));
+  Point temp = getCaretPos(caretPos, true);
+  Point temp2 = getCaretPos(caretSelPos, true);
   if (temp2.x < std::abs(this->offs.x))
     this->offs.x = -temp2.x;
-  if (temp2.x >= std::abs(this->offs.x) + bufferSize.width - (lineNums ? 4 : 0))
-    this->offs.x = - (temp2.x - bufferSize.width + (lineNums ? 4 : 0))-1;
+  if (temp2.x >= std::abs(this->offs.x) + bufferSize.width - padding)
+    this->offs.x = - (temp2.x - bufferSize.width + padding)-1;
   if (temp2.y < std::abs(this->offs.y))
     this->offs.y = -temp2.y;
   if (temp2.y >= std::abs(this->offs.y) + bufferSize.height)
     this->offs.y = - (temp2.y - bufferSize.height)-1;
   if (temp.x < std::abs(this->offs.x))
     this->offs.x = -temp.x;
-  if (temp.x >= std::abs(this->offs.x) + bufferSize.width - (lineNums ? 4 : 0))
-    this->offs.x = - (temp.x - bufferSize.width + (lineNums ? 4 : 0))-1;
+  if (temp.x >= std::abs(this->offs.x) + bufferSize.width - padding)
+    this->offs.x = - (temp.x - bufferSize.width + padding)-1;
   if (temp.y < std::abs(this->offs.y))
     this->offs.y = -temp.y;
   if (temp.y >= std::abs(this->offs.y) + bufferSize.height)
@@ -358,13 +359,26 @@ void TextBuffer::ctrlMoveCaret(Direction dir, Size bufferSize, bool shiftSel, bo
   this->setOffs(bufferSize, lineNums);
 }
 
-Point TextBuffer::getCaretPos(int caretPos) {
-    Point pos = {0,0};
+Point TextBuffer::getCaretPos(int caretPos, bool skipFoldedBlocks) {
+    Point pos = {0, 0};
+    int nl = 0;
+    int unfold_line;
+    bool folded = false;
     for (int i = 0; i < buffer.length() + 1; ++i) {
+      if (skipFoldedBlocks) {
+	if (codeBar.IsBlockFolded(nl)) {
+	  folded = true;
+	  unfold_line = codeBar.GetNextLine(nl);
+	}
+	if (folded && unfold_line == nl+1) {
+	  folded = false;
+	}
+      }
       if (caretPos == i)
         return pos;
       if (i < buffer.length() && buffer[i] == '\n') {
-        pos.y += 1;
+	++nl;
+        if (!folded) pos.y += 1;
         pos.x = 0;
       }
       else if (i < buffer.length() && buffer[i] == '\t')
@@ -375,12 +389,26 @@ Point TextBuffer::getCaretPos(int caretPos) {
   return {0,0};
 }
 
-int TextBuffer::findNewline(int n) {
+int TextBuffer::findNewline(int n, bool skipFoldedBlocks, bool returnLineNumber) {
   int c = 0;
+  int sc = 0;
   if (n == 0) return 0;
+  int unfold_line;
+  bool folded = false;
   for (int p = 0; p < buffer.length(); ++p) {
-      if (buffer[p] == '\n') c++;
-      if (c == n) return p+1;
+      if (codeBar.IsBlockFolded(c)) {
+	folded = true;
+	unfold_line = codeBar.GetNextLine(c);
+      }
+      if (folded && unfold_line == c+1) {
+	folded = false;
+      }
+      if (buffer[p] == '\n') {
+        if (!(skipFoldedBlocks && folded))
+	  ++sc;
+	++c;
+      }
+      if (sc == n) return (returnLineNumber ? (c) : (p+1));
   }
   return 0;
 }
@@ -400,7 +428,7 @@ TextBuffer buildTextBuffer(std::string name, std::string filePath, bool isDirty,
     caretSelPos 	= 0;
   textBuffer.buffer	= buffer;
   textBuffer.findText   = "";
-  textBuffer.syntax.updateSyntax(&textBuffer, name);
+  textBuffer.codeBar.Update(&textBuffer);
   return textBuffer;
 }
 
@@ -486,29 +514,26 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
       buf->offs.y -= bufferSize.height;
       break;
     case (TK_MOUSE_SCROLL):
-      while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
-        ++newLines;
-        ++pos;
-      }
-      if (terminal_check(TK_MOUSE_LEFT)) {
-	buf->offs.y -= terminal_state(TK_MOUSE_WHEEL) * scrollMult;
-        break;
-      }
-      buf->caretPos = buf->findNewline(buf->getCaretPos(buf->caretPos).y - 
-                           ((terminal_state(TK_MOUSE_WHEEL) < 0) ? (scrollMult) : 
-                             ((buf->getCaretPos(buf->caretPos).y < newLines - scrollMult) ? 
-                               -scrollMult : -(newLines - buf->getCaretPos(buf->caretPos).y))));
-      buf->caretSelPos = buf->caretPos;
-      buf->cachedXPos = buf->getCaretPos(buf->caretPos).x;
-      buf->setOffs(bufferSize, lineNums);
+      buf->offs.y -= terminal_state(TK_MOUSE_WHEEL) * scrollMult;
+      buf->offs.y = min(buf->offs.y, 0);
       break;
     default:
       break;
   }
+  int padding = (buf->codeBar.GetShowing() ? 1 : 0) + (lineNums ? 4 : 0);
+  if (buf->codeBar.GetShowing()
+  &&  terminal_state(TK_MOUSE_Y) >= buf->pos.y
+  &&  terminal_state(TK_MOUSE_Y) <  buf->pos.y + bufferSize.height
+  &&  terminal_state(TK_MOUSE_X) == buf->pos.x + padding - 1) {
+    if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
+      int lineNum = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y, true, true);
+      buf->codeBar.FoldBracket(lineNum);
+    }
+  }
   if (terminal_state(TK_MOUSE_Y) >= buf->pos.y
-  &&  terminal_state(TK_MOUSE_X) >= buf->pos.x
+  &&  terminal_state(TK_MOUSE_X) >= buf->pos.x + padding
   &&  terminal_state(TK_MOUSE_Y) < buf->pos.y + bufferSize.height
-  &&  terminal_state(TK_MOUSE_X) < buf->pos.x + bufferSize.width)
+  &&  terminal_state(TK_MOUSE_X) < buf->pos.x - padding + bufferSize.width)
   {
     if (key == TK_MOUSE_LEFT) {
       while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
@@ -518,9 +543,9 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
       if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
         buf->caretPos = buf->buffer.length();
       else {
-        start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
+        start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y, true);
         int act_pos = start_pos;
-        for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caretPos) {
+        for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - padding - buf->offs.x - buf->pos.x; ++buf->caretPos) {
           if (buf->buffer.length() <= buf->caretPos) {
 	    buf->caretPos = buf->buffer.length();
 	    break;
@@ -543,9 +568,9 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
       if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
         buf->caretPos = buf->buffer.length();
       else {
-        start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
+        start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y, true);
         int act_pos = start_pos;
-        for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caretPos) {
+        for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - padding - buf->offs.x - buf->pos.x; ++buf->caretPos) {
           if (buf->buffer.length() <= buf->caretPos) {
 	    buf->caretPos = buf->buffer.length();
 	    break;
@@ -568,9 +593,9 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
         buf->caretPos = buf->buffer.length();
       else {
         if (buf->offs.y > 0) buf->offs.y = 0;
-        start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y);
+        start_pos = buf->findNewline(terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y, true);
         int act_pos = start_pos;
-        for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - ((lineNums) ? 4 : 0) - buf->offs.x - buf->pos.x; ++buf->caretPos) {
+        for (buf->caretPos = start_pos; act_pos < start_pos + terminal_state(TK_MOUSE_X) - padding - buf->offs.x - buf->pos.x; ++buf->caretPos) {
           if (buf->buffer.length() <= buf->caretPos) {
 	    buf->caretPos = buf->buffer.length();
             break;
@@ -595,7 +620,9 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
   color_t term_bkcolor;
   if (buf->syntax.bufVec.size() != buf->buffer.length()) {
     buf->syntax.updateSyntax(buf, buf->name);
+    buf->codeBar.Update(buf);
   }
+  bool cbShowing = buf->codeBar.GetShowing();
   terminal_color(term_color = color_from_name("workspacedefaultfg"));
   terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
   for (int i = buf->pos.x; i < buf->pos.x + bufferSize.width; ++i)
@@ -604,57 +631,95 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
     }
   int y = 0;
   int x = 0;
+  bool in_fold = false;
+  int fold_end;
   if (lineNums) {
     terminal_bkcolor(term_bkcolor = color_from_name("dark workspacedefaultbk"));
     terminal_clear_area(0, buf->pos.y, 4, 1);
     terminal_print(0, buf->pos.y, std::to_string(std::abs(buf->offs.y) + 1).c_str());
-    terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
   }
+  if (cbShowing) {
+    terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
+    terminal_color(term_color = color_from_name("workspacedefaultfg"));
+    terminal_print((lineNums ? 4 : 0), buf->pos.y + y, buf->codeBar.IsBlockAtLine(y + -(buf->offs.y)) ? (buf->codeBar.IsBlockFolded(y - buf->offs.y) ? "+" : "-") : "|");
+    if (y > 0 && buf->codeBar.IsBlockFolded(y-1)) {
+      in_fold = true;
+      fold_end = buf->codeBar.GetNextLine(y-1) + 1;
+    }
+  }
+  int padding = (cbShowing ? 1 : 0) + (lineNums ? 4 : 0);
   int i = 0;
+  int temp_y_offs = 0;
+  if (buf->buffer.length() == 0) {
+    terminal_bkcolor(color_from_name("workspacedefaultfg"));
+    terminal_color(color_from_name("workspacedefaultbk"));
+    terminal_put(padding + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
+    terminal_bkcolor(term_bkcolor);
+    terminal_color(term_color);
+  }
   for (char c : buf->buffer) {
-    if (y + buf->offs.y >= bufferSize.height)
+    if (in_fold) {
+      if (y == fold_end)
+        in_fold = false;
+    }
+    if (y + buf->offs.y - temp_y_offs >= bufferSize.height)
       break;
-    if (y + buf->offs.y >= 0) {
+    if (y + buf->offs.y >= 0 && !in_fold) {
       color_t *color = &(buf->syntax.bufVec[i]);
-      if (((i >= buf->caretSelPos && i < buf->caretPos) || (i >= buf->caretPos && i < buf->caretSelPos)) 
-      &&    buf->caretPos != buf->caretSelPos) {
+      if (i + 1 == buf->caretPos && i == buf->buffer.length() - 1) {
+        terminal_bkcolor(color_from_name("workspacedefaultfg"));
+        terminal_color(color_from_name("workspacedefaultbk"));
+        terminal_put(padding + buf->pos.x + buf->offs.x + x + 1, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
+	terminal_bkcolor(term_bkcolor);
+        terminal_color(term_color);
+      }
+      else if (i == buf->caretPos) {
+        terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultfg"));
+        terminal_color(term_color = color_from_name("workspacedefaultbk"));
+        color = &term_color;
+      }
+      else if ((i > buf->caretSelPos && i < buf->caretPos) || (i >= buf->caretPos && i < buf->caretSelPos)) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacehlbk"));
       }
-      if (i == buf->caretPos && buf->caretPos > buf->caretSelPos
-      ||  i == buf->caretSelPos && buf->caretSelPos > buf->caretPos)
+      else
         terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
       
       if (term_color != *color) terminal_color(term_color = *color);
       if (c != '\n' && c != '\t' 
-      &&  x + buf->offs.x < bufferSize.width - (lineNums ? 4 : 0) && x + buf->offs.x >= 0 
-      &&  y + buf->offs.y < bufferSize.height)
-        terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, c);
+      &&  x + buf->offs.x < bufferSize.width - padding && x + buf->offs.x >= 0)
+        terminal_put(padding + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y - temp_y_offs, c);
     }
     if (c == '\n') {
-      if (buf->buffer[i-1] == '\n')
-        terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y, ' ');
+      if (!in_fold)
+        terminal_put(padding + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
       ++y;
+      if (in_fold) ++temp_y_offs;
       x = 0;
       if (lineNums) {
+        terminal_color(term_color = color_from_name("workspacedefaultfg"));
         terminal_bkcolor(term_bkcolor = color_from_name("dark workspacedefaultbk"));
-        terminal_clear_area(0, buf->pos.y + y, 4, 1);
-        terminal_print(0, buf->pos.y + y, std::to_string(std::abs(buf->offs.y) + 1 + y).c_str());
+        terminal_clear_area(0, buf->pos.y + buf->offs.y + y, 4, 1);
+        terminal_print(0, buf->pos.y + buf->offs.y + y - temp_y_offs, std::to_string(1 + y).c_str());
+      }
+      if (cbShowing) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
+        terminal_color(term_color = color_from_name("workspacedefaultfg"));
+        terminal_print((lineNums ? 4 : 0), buf->pos.y + buf->offs.y + y - temp_y_offs, buf->codeBar.IsBlockAtLine(y) ? (buf->codeBar.IsBlockFolded(y) ? "+" : "-") : "|");
+	if (y > 0 && buf->codeBar.IsBlockFolded(y-1)) {
+          in_fold = true;
+          fold_end = buf->codeBar.GetNextLine(y-1);
+        }
       }
     }
     else if (c == '\t') {
-      for (int cx = x; cx <= x + 8 - x % 8; cx++)
-        terminal_put((lineNums ? 4 : 0) + buf->pos.x + buf->offs.x + cx, buf->pos.y + buf->offs.y + y, ' ');
+      if (!in_fold)
+        for (int cx = x; cx <= x + 8 - x % 8; cx++)
+          terminal_put(padding + buf->pos.x + buf->offs.x + cx, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
       x += 8 - x % 8;
     }
     else ++x;
     ++i;
   }
-  terminal_color(color_from_name("workspacedefaultbk"));
-  terminal_bkcolor(color_from_name("workspacedefaultfg"));
-  Point caretPos = buf->getCaretPos(buf->caretPos);
-  char prev_char = terminal_pick((lineNums ? 4 : 0) + buf->pos.x + caretPos.x + buf->offs.x, buf->pos.y + caretPos.y + buf->offs.y);
-  terminal_put((lineNums ? 4 : 0) + buf->pos.x + caretPos.x + buf->offs.x, buf->pos.y + caretPos.y + buf->offs.y, prev_char);
   terminal_color(color_from_name("workspacedefaultfg"));
   terminal_bkcolor(color_from_name("workspacedefaultbk"));
 }

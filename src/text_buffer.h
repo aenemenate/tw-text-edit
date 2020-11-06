@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_types.h"
+#include "code_bar.h"
 #include "syntax_highlight.h"
 #include <string>
 
@@ -30,6 +31,7 @@ struct TextBuffer {
   std::string buffer;   // the buffer itself
   std::string findText;
   Syntax syntax;
+  CodeBar codeBar;
   std::vector<Action> undos;
   std::vector<Action> redos;
 
@@ -45,8 +47,8 @@ struct TextBuffer {
   void setOffs(Size bufferSize, bool lineNums);
   void moveCaret(Direction dir, Size bufferSize, bool shiftSel, bool lineNums);
   void ctrlMoveCaret(Direction dir, Size bufferSize, bool shiftSel, bool lineNums);
-  Point getCaretPos(int caret_pos);
-  int findNewline(int n);
+  Point getCaretPos(int caret_pos, bool skipFoldedBlocks = false);
+  int findNewline(int n, bool skipFoldedBlocks = false, bool returnLineNumber = false);
 };
 
 TextBuffer buildTextBuffer(std::string name, std::string filepath, bool isDirty, Point offs, Point pos, std::string buffer);
