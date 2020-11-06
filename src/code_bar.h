@@ -26,6 +26,7 @@ public:
   bool BracketOfNameExists(std::string name);
   bool BracketOfPositionExists(int beginLine);
   void DeleteBracketAtPosition(int beginLine);
+  void DeleteBracketAtName(std::string name);
   bool IsBlockAtLine(int lineNumber);
   bool IsBlockFolded(int lineNumber);
   int  GetNextLine(int lineNumber);

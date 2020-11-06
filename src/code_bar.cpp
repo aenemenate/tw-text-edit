@@ -27,6 +27,15 @@ void CodeBar::DeleteBracketAtPosition(int beginLine) {
   brackets = _brackets;
 }
 
+void CodeBar::DeleteBracketAtName(std::string name) {
+  std::vector<CodeBracket> _brackets;
+  for (int i = 0; i < brackets.size(); ++i) {
+    if (brackets[i].GetName() != name)
+      _brackets.push_back(brackets[i]);
+  }
+  brackets = _brackets;
+}
+
 void CodeBar::UpdateBlocks(TextBuffer *buf) {
   int scope = 0;
   std::string name;
@@ -57,7 +66,8 @@ void CodeBar::UpdateBlocks(TextBuffer *buf) {
 	    brackets.push_back(CodeBracket(beginLine, endLine, name));
 	  }
 	  else if (!BracketOfPositionExists(beginLine) && BracketOfNameExists(name)) {
-	    brackets.push_back(CodeBracket(beginLine, endLine, std::string{name+"1"}));
+	    DeleteBracketAtName(name);
+	    brackets.push_back(CodeBracket(beginLine, endLine, name));
 	  }
 	}
       }
