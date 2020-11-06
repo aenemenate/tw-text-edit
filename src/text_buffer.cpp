@@ -535,11 +535,23 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
   &&  terminal_state(TK_MOUSE_Y) < buf->pos.y + bufferSize.height
   &&  terminal_state(TK_MOUSE_X) < buf->pos.x - padding + bufferSize.width)
   {
-    if (key == TK_MOUSE_LEFT) {
-      while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
-        ++newLines;
-        ++pos;
+    bool folded = false;
+    int unfold_line;
+    int actNewLines = 0;
+    while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
+      if (buf->codeBar.IsBlockFolded(actNewLines)) {
+	folded = true;
+	unfold_line = buf->codeBar.GetNextLine(actNewLines);
       }
+      if (folded)
+	if (unfold_line == actNewLines + 1)
+	  folded = false;
+      ++actNewLines;
+      if (folded == false)
+	++newLines;
+      ++pos;
+    }
+    if (key == TK_MOUSE_LEFT) {
       if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
         buf->caretPos = buf->buffer.length();
       else {
@@ -561,10 +573,6 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
       buf->caretSelPos = buf->caretPos;
     }
     if (key == (TK_MOUSE_LEFT|TK_KEY_RELEASED)) {
-      while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
-        ++newLines;
-        ++pos;
-      }
       if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
         buf->caretPos = buf->buffer.length();
       else {
@@ -585,10 +593,6 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
       }
     }
     if (terminal_check(TK_MOUSE_LEFT)) {
-      while ((pos = buf->buffer.find('\n', pos)) != std::string::npos) {
-        ++newLines;
-        ++pos;
-      }
       if (terminal_state(TK_MOUSE_Y) - buf->pos.y - buf->offs.y > newLines)
         buf->caretPos = buf->buffer.length();
       else {
