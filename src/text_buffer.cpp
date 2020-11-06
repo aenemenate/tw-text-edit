@@ -678,7 +678,7 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
         terminal_color(term_color = color_from_name("workspacedefaultbk"));
         color = &term_color;
       }
-      else if ((i > buf->caretSelPos && i < buf->caretPos) || (i >= buf->caretPos && i < buf->caretSelPos)) {
+      else if ((i >= buf->caretSelPos && i < buf->caretPos) || (i >= buf->caretPos && i < buf->caretSelPos)) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacehlbk"));
       }
       else
@@ -698,7 +698,7 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
       if (lineNums) {
         terminal_color(term_color = color_from_name("workspacedefaultfg"));
         terminal_bkcolor(term_bkcolor = color_from_name("dark workspacedefaultbk"));
-        terminal_clear_area(0, buf->pos.y + buf->offs.y + y, 4, 1);
+        terminal_clear_area(0, buf->pos.y + buf->offs.y + y - temp_y_offs, 4, 1);
         terminal_print(0, buf->pos.y + buf->offs.y + y - temp_y_offs, std::to_string(1 + y).c_str());
       }
       if (cbShowing) {
