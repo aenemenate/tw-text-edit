@@ -669,7 +669,10 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
       if (i + 1 == buf->caretPos && i == buf->buffer.length() - 1) {
         terminal_bkcolor(color_from_name("workspacedefaultfg"));
         terminal_color(color_from_name("workspacedefaultbk"));
-        terminal_put(padding + buf->pos.x + buf->offs.x + x + 1, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
+        if (c != '\n')
+          terminal_put(padding + buf->pos.x + buf->offs.x + x + 1, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
+	else 
+          terminal_put(padding + buf->pos.x + buf->offs.x + 0, buf->pos.y + buf->offs.y + y - temp_y_offs + 1, ' ');
 	terminal_bkcolor(term_bkcolor);
         terminal_color(term_color);
       }

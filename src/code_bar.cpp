@@ -2,25 +2,64 @@
 
 #include "text_buffer.h"
 
+bool CodeBar::BracketOfNameExists(std::string name) {
+  for (int i = 0; i < brackets.size(); ++i) {
+    if (brackets[i].GetName() == name)
+      return true;
+  }
+  return false;
+}
+
+bool CodeBar::BracketOfPositionExists(int beginLine) {
+  for (int i = 0; i < brackets.size(); ++i) {
+    if (brackets[i].beginLine == beginLine)
+      return true;
+  }
+  return false;
+}
+
+void CodeBar::DeleteBracketAtPosition(int beginLine) {
+  std::vector<CodeBracket> _brackets;
+  for (int i = 0; i < brackets.size(); ++i) {
+    if (brackets[i].beginLine != beginLine)
+      _brackets.push_back(brackets[i]);
+  }
+  brackets = _brackets;
+}
+
 void CodeBar::UpdateBlocks(TextBuffer *buf) {
-  brackets.clear();
   int scope = 0;
+  std::string name;
   int beginLine, endLine;
   int curLine = 0;
+  int lastReturnIndex = 0;
   for (int i = 0; i < buf->buffer.length(); ++i) {
-    if (buf->buffer[i] == '\n')
+    if (buf->buffer[i] == '\n') {
+      lastReturnIndex = i;
       ++curLine;
+    }
     if (buf->buffer[i] == '{') {
-      if (scope == 0)
-        beginLine = curLine;
+      if (scope == 0) {
+	name = buf->buffer.substr(lastReturnIndex, i - lastReturnIndex);
+	beginLine = curLine;
+      }
       ++scope;
     }
     if (scope >= 1 && buf->buffer[i] == '}') {
       --scope;
       if (scope == 0) {
         endLine = curLine;
-        if (endLine != beginLine)
-	  brackets.push_back(CodeBracket(beginLine, endLine));
+	if (endLine != beginLine) { 
+	  if (!BracketOfNameExists(name) && !BracketOfPositionExists(beginLine))
+	    brackets.push_back(CodeBracket(beginLine, endLine, name));
+	  else if (BracketOfPositionExists(beginLine) && !BracketOfNameExists(name)) {
+	    DeleteBracketAtPosition(beginLine);
+	    brackets.push_back(CodeBracket(beginLine, endLine, name));
+	  }
+	  else if (!BracketOfPositionExists(beginLine) && BracketOfNameExists(name)) {
+	    brackets.push_back(CodeBracket(beginLine, endLine, std::string{name+"1"}));
+	  }
+	}
       }
     }
   }
