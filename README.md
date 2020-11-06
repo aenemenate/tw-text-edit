@@ -5,7 +5,7 @@ Mouse support is included, but not necessary. All features are accessible
 through the keyboard.
 
 Niceties: custom & preincluded theme files, integration with windows file
-explorer, runs batch files, mouse support.
+explorer, runs batch files, mouse support, keyword highlighting, code bracket folding.
 
   Eventually I would like this to function as a complete development environment
 for Windows and Linux, simply so I can use it myself. In order to achieve this 
@@ -44,6 +44,7 @@ Linux only: xsel
 - customizeable color themes
 - undo / redo
 - call batch files and view a log of the output
+- fold brackets of code
 
 ### Things I would like to implement:
 - editor settings file
