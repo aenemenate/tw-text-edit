@@ -56,15 +56,11 @@ void init(int argc, char *argv[]) {
           if (editorData.buffers.textBuffers.back().getCaretPos(caretPos).y + 1 == line)
             break;
         }
- 
-      editorData.buffers.textBuffers.back().caretPos = caretPos;
- 
-      editorData.buffers.textBuffers.back().caretSelPos = editorData.buffers.textBuffers.back().caretPos;
- 
-      editorData.buffers.textBuffers.back().setOffs({80, 32-3}, false);
+        editorData.buffers.textBuffers.back().caretPos = caretPos;
+        editorData.buffers.textBuffers.back().caretSelPos = editorData.buffers.textBuffers.back().caretPos;
+        editorData.buffers.textBuffers.back().setOffs({80, 32-3}, false);
       }
     }
-
     catch(std::exception ex) {
       if (std::string{argv[1]} != "") {
         editorData.workingDirectory = startPath.string();
@@ -88,8 +84,7 @@ void handleInput(Size termSize) {
         handleInputBufferList(&(editorData.buffers), key, {termSize.width, termSize.height - 1}, editorData.lineNums);
 }
 
-void update(Size termSize) {
-}
+void update(Size termSize) {}
 
 void draw(Size termSize) {
   terminal_clear();

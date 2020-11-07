@@ -53,12 +53,16 @@ bool CodeBar::DeleteBracketAtName(std::string name) {
 
 void CodeBar::UpdateBlocks(TextBuffer *buf) {
   int scope = 0;
-  std::string name;
+  std::string name = "";
+  int markedForDeletion = -1;
   int beginLine, endLine;
   int curLine = 0;
   int lastReturnIndex = 0;
   for (int i = 0; i < buf->buffer.length(); ++i) {
     if (buf->buffer[i] == '\n') {
+      if (BracketOfPositionExists(curLine - 1))
+	if (name == "")
+	  DeleteBracketAtPosition(curLine - 1);
       lastReturnIndex = i;
       ++curLine;
     }
@@ -72,10 +76,12 @@ void CodeBar::UpdateBlocks(TextBuffer *buf) {
     if (scope >= 1 && buf->buffer[i] == '}') {
       --scope;
       if (scope == 0) {
-        endLine = curLine;
-	if (endLine != beginLine) { 
-	  if (!BracketOfNameExists(name) && !BracketOfPositionExists(beginLine))
+	endLine = curLine + 1;
+	if (endLine != beginLine + 1) {
+	  if (!BracketOfNameExists(name) && !BracketOfPositionExists(beginLine)) {
 	    brackets.push_back(CodeBracket(beginLine, endLine, name));
+	    name = "";
+	  }
 	  else if (BracketOfPositionExists(beginLine)) {
 	    if (!BracketOfNameExists(name)) {
 	      bool folded = DeleteBracketAtPosition(beginLine);
@@ -86,11 +92,13 @@ void CodeBar::UpdateBlocks(TextBuffer *buf) {
 	      DeleteBracketAtPosition(beginLine);
 	      brackets.push_back(CodeBracket(beginLine, endLine, name));
 	    }
+	    name = "";
 	  }
 	  else if (!BracketOfPositionExists(beginLine) && BracketOfNameExists(name)) {
 	    bool folded = DeleteBracketAtName(name);
 	    brackets.push_back(CodeBracket(beginLine, endLine, name));
 	    if (folded) brackets[brackets.size()-1].Fold();
+	    name = "";
 	  }
 	}
       }
