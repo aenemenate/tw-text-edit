@@ -25,8 +25,9 @@ public:
   void Update(TextBuffer *buf);
   bool BracketOfNameExists(std::string name);
   bool BracketOfPositionExists(int beginLine);
-  void DeleteBracketAtPosition(int beginLine);
-  void DeleteBracketAtName(std::string name);
+  bool BracketAtPositionIsSameLength(int beginLine, int endLine);
+  bool DeleteBracketAtPosition(int beginLine);
+  bool DeleteBracketAtName(std::string name);
   bool IsBlockAtLine(int lineNumber);
   bool IsBlockFolded(int lineNumber);
   int  GetNextLine(int lineNumber);

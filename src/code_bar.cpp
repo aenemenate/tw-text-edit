@@ -3,37 +3,52 @@
 #include "text_buffer.h"
 
 bool CodeBar::BracketOfNameExists(std::string name) {
-  for (int i = 0; i < brackets.size(); ++i) {
+  for (int i = 0; i < brackets.size(); ++i)
     if (brackets[i].GetName() == name)
       return true;
-  }
   return false;
 }
 
 bool CodeBar::BracketOfPositionExists(int beginLine) {
-  for (int i = 0; i < brackets.size(); ++i) {
+  for (int i = 0; i < brackets.size(); ++i)
     if (brackets[i].beginLine == beginLine)
       return true;
-  }
   return false;
 }
 
-void CodeBar::DeleteBracketAtPosition(int beginLine) {
+bool CodeBar::BracketAtPositionIsSameLength(int beginLine, int endLine) {
+  for (int i = 0; i < brackets.size(); ++i)
+    if (brackets[i].beginLine == beginLine) {
+      if (brackets[i].endLine == endLine)
+        return true;
+    }
+  return false;
+}
+
+bool CodeBar::DeleteBracketAtPosition(int beginLine) {
+  bool folded = false;
   std::vector<CodeBracket> _brackets;
   for (int i = 0; i < brackets.size(); ++i) {
     if (brackets[i].beginLine != beginLine)
       _brackets.push_back(brackets[i]);
+    else if (brackets[i].IsFolded())
+      folded = true;
   }
   brackets = _brackets;
+  return folded;
 }
 
-void CodeBar::DeleteBracketAtName(std::string name) {
+bool CodeBar::DeleteBracketAtName(std::string name) {
+  bool folded = false;
   std::vector<CodeBracket> _brackets;
   for (int i = 0; i < brackets.size(); ++i) {
     if (brackets[i].GetName() != name)
       _brackets.push_back(brackets[i]);
+    else if (brackets[i].IsFolded())
+      folded = true;
   }
   brackets = _brackets;
+  return folded;
 }
 
 void CodeBar::UpdateBlocks(TextBuffer *buf) {
@@ -61,13 +76,21 @@ void CodeBar::UpdateBlocks(TextBuffer *buf) {
 	if (endLine != beginLine) { 
 	  if (!BracketOfNameExists(name) && !BracketOfPositionExists(beginLine))
 	    brackets.push_back(CodeBracket(beginLine, endLine, name));
-	  else if (BracketOfPositionExists(beginLine) && !BracketOfNameExists(name)) {
-	    DeleteBracketAtPosition(beginLine);
-	    brackets.push_back(CodeBracket(beginLine, endLine, name));
+	  else if (BracketOfPositionExists(beginLine)) {
+	    if (!BracketOfNameExists(name)) {
+	      bool folded = DeleteBracketAtPosition(beginLine);
+	      brackets.push_back(CodeBracket(beginLine, endLine, name));
+	      if (folded) brackets[brackets.size()-1].Fold();
+	    }
+	    else if (!BracketAtPositionIsSameLength(beginLine, endLine)) {
+	      DeleteBracketAtPosition(beginLine);
+	      brackets.push_back(CodeBracket(beginLine, endLine, name));
+	    }
 	  }
 	  else if (!BracketOfPositionExists(beginLine) && BracketOfNameExists(name)) {
-	    DeleteBracketAtName(name);
+	    bool folded = DeleteBracketAtName(name);
 	    brackets.push_back(CodeBracket(beginLine, endLine, name));
+	    if (folded) brackets[brackets.size()-1].Fold();
 	  }
 	}
       }
