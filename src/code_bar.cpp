@@ -151,3 +151,12 @@ void CodeBar::FoldBracket(int lineNumber) {
       brackets[i].Fold();
   }
 }
+
+void CodeBar::FoldAll() {
+  for (int i = 0; i < brackets.size(); ++i) {
+    if (!brackets[i].IsFolded()) {
+      brackets[i].Fold();
+    }
+  }
+}
+

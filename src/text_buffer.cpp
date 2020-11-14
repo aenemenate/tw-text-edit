@@ -450,6 +450,10 @@ bool handleInputTextBuffer(TextBuffer *buf, int key, Size bufferSize, bool enter
       buf->ctrlMoveCaret(Direction::Up, bufferSize, terminal_state(TK_SHIFT), lineNums);
     if (key == TK_DOWN)
       buf->ctrlMoveCaret(Direction::Down, bufferSize, terminal_state(TK_SHIFT), lineNums);
+    if (key == TK_RBRACKET)
+      buf->codeBar.FoldAll();
+    if (key == TK_LBRACKET)
+      buf->codeBar.FoldBracket(buf->getCaretPos(buf->caretPos).y);
     return false;
   }
   else if (terminal_state(TK_ALT)) {
@@ -638,7 +642,7 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
   bool in_fold = false;
   int fold_end;
   if (lineNums) {
-    terminal_bkcolor(term_bkcolor = color_from_name("dark workspacedefaultbk"));
+    terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
     terminal_clear_area(0, buf->pos.y, 4, 1);
     terminal_print(0, buf->pos.y, std::to_string(std::abs(buf->offs.y) + 1).c_str());
   }
@@ -704,7 +708,7 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
       x = 0;
       if (lineNums) {
         terminal_color(term_color = color_from_name("workspacedefaultfg"));
-        terminal_bkcolor(term_bkcolor = color_from_name("dark workspacedefaultbk"));
+        terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
         terminal_clear_area(0, buf->pos.y + buf->offs.y + y - temp_y_offs, 4, 1);
         terminal_print(0, buf->pos.y + buf->offs.y + y - temp_y_offs, std::to_string(1 + y).c_str());
       }
