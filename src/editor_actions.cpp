@@ -56,8 +56,8 @@ void GetOpenFile(EditorData *editorData) {
 void OpenFile(std::string name, EditorData *editorData) {
   fs::path filename = fs::absolute(fs::path(name));
   std::ifstream filestream(name);
-  std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
-  if (filestream) {
+  if (!fs::is_directory(filename) && filestream) {
+    std::string file = std::string((std::istreambuf_iterator<char>(filestream)), std::istreambuf_iterator<char>());
     editorData->buffers.textBuffers.push_back(buildTextBuffer(filename.filename().string(), filename.parent_path().string(), false, {0, 0}, {0, 2}, file));
     editorData->buffers.cur = editorData->buffers.textBuffers.size() - 1;
   }

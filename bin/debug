@@ -1,0 +1,19 @@
+ #!/bin/sh
+
+pushd .
+
+if [ ! -d "build" ]
+then
+  mkdir build
+fi
+
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake --build .
+
+cd ../editor
+mv ../build/tw-text-edit .
+gdb ./tw-text-edit
+mv tw-text-edit ../build
+
+popd
