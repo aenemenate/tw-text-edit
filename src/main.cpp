@@ -102,9 +102,9 @@ int main(int argc, char *argv[]) {
   Size termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
   draw(termSize);
   while ((editorData.running)) {
-    if (terminal_state(TK_WIDTH) != termSize.width
+    if (terminal_state(TK_WIDTH)  != termSize.width
     ||  terminal_state(TK_HEIGHT) != termSize.height) {
-      termSize = {terminal_state(TK_WIDTH),terminal_state(TK_HEIGHT)};
+      termSize = { terminal_state(TK_WIDTH), terminal_state(TK_HEIGHT) };
       bool showing = editorData.textDropdown.showing;
       buildTextDropdown(&(editorData.textDropdown), termSize);
       editorData.textDropdown.showing = showing;

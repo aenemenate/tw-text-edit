@@ -117,7 +117,7 @@ void CloseFile(EditorData *editorData) {
     editorData->buffers.cur = 0;
   }
 }
-
+ 
 
 void Cut(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) return;
@@ -178,6 +178,7 @@ void RunBatchFile(EditorData *editorData) {
 void ToggleLineNums(EditorData *editorData) {
   editorData->lineNums = !editorData->lineNums;
 }
+
 void SwitchBufferLeft(EditorData *editorData) {
   if (editorData->buffers.textBuffers.empty()) 
     return;
@@ -221,3 +222,4 @@ void MoveBufferRight(EditorData *editorData) {
     rotate(to, from, from+1);
   ++editorData->buffers.cur;
 }
+
