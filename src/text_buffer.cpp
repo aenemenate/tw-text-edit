@@ -689,7 +689,7 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
         terminal_color(term_color = color_from_name("workspacedefaultbk"));
         color = &term_color;
       }
-      else if ((i >= buf->caretSelPos && i < buf->caretPos) || (i >= buf->caretPos && i < buf->caretSelPos)) {
+      else if (((i >= buf->caretSelPos && i < buf->caretPos) || (i >= buf->caretPos && i < buf->caretSelPos)) && !(c == '\n' && i > 0 && buf->buffer[i-1] != '\n')) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacehlbk"));
       }
       else
