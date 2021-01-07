@@ -672,19 +672,12 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
     }
     if (y + buf->offs.y - temp_y_offs >= bufferSize.height)
       break;
-    if (y + buf->offs.y >= 0 && !in_fold) {
+    if (y + buf->offs.y >= 0) {
       color_t *color = &(buf->syntax.bufVec[i]);
       if (i + 1 == buf->caretPos && i == buf->buffer.length() - 1) {
-        terminal_bkcolor(color_from_name("workspacedefaultfg"));
-        terminal_color(color_from_name("workspacedefaultbk"));
-        if (c != '\n')
-          terminal_put(padding + buf->pos.x + buf->offs.x + x + 1, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
-	else 
-          terminal_put(padding + buf->pos.x + buf->offs.x + 0, buf->pos.y + buf->offs.y + y - temp_y_offs + 1, ' ');
-	terminal_bkcolor(term_bkcolor);
-        terminal_color(term_color);
       }
-      else if (i == buf->caretPos) {
+      else if (!in_fold) {
+      if (i == buf->caretPos) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultfg"));
         terminal_color(term_color = color_from_name("workspacedefaultbk"));
         color = &term_color;
@@ -694,11 +687,13 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
       }
       else
         terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
-      
+      }
+      if (!in_fold) {
       if (term_color != *color) terminal_color(term_color = *color);
       if (c != '\n' && c != '\t' 
       &&  x + buf->offs.x < bufferSize.width - padding && x + buf->offs.x >= 0)
         terminal_put(padding + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y - temp_y_offs, c);
+      }
     }
     if (c == '\n') {
       if (!in_fold)
@@ -716,7 +711,7 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
         terminal_bkcolor(term_bkcolor = color_from_name("workspacedefaultbk"));
         terminal_color(term_color = color_from_name("workspacedefaultfg"));
         terminal_print((lineNums ? 4 : 0), buf->pos.y + buf->offs.y + y - temp_y_offs, buf->codeBar.IsBlockAtLine(y) ? (buf->codeBar.IsBlockFolded(y) ? "+" : "-") : "|");
-	if (y > 0 && buf->codeBar.IsBlockFolded(y-1)) {
+        if (y > 0 && buf->codeBar.IsBlockFolded(y-1)) {
           in_fold = true;
           fold_end = buf->codeBar.GetNextLine(y-1);
         }
@@ -729,6 +724,17 @@ void drawTextBuffer(TextBuffer *buf, Size bufferSize, bool lineNums) {
       x += 8 - x % 8;
     }
     else ++x;
+    if (i + 1 == buf->caretPos && i == buf->buffer.length() - 1) {
+        terminal_bkcolor(color_from_name("workspacedefaultfg"));
+        terminal_color(color_from_name("workspacedefaultbk"));
+        if (c != '\n')
+          terminal_put(padding + buf->pos.x + buf->offs.x + x, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
+        else 
+          terminal_put(padding + buf->pos.x + buf->offs.x + 0, buf->pos.y + buf->offs.y + y - temp_y_offs, ' ');
+        terminal_bkcolor(term_bkcolor);
+        terminal_color(term_color);
+      }
+      
     ++i;
   }
   terminal_color(color_from_name("workspacedefaultfg"));
