@@ -46,8 +46,12 @@ void drawStatusBar(EditorData* editorData, Size termSize) {
 // set string according to extension
     if (ext == "cpp" || ext == "h" || ext == "hpp" || ext == "cxx")
       filename = "C++";
+    else if (ext == "ml" || ext == "mli")
+      filename = "OCaml";
+    else if (ext == "js")
+      filename = "JavaScript";
     else if (ext == "ini")
-      filename = "Ini Config File";
+      filename = "Ini File";
     else if (ext == "bat" || ext == "cmd")
       filename = "Batch File";
     else if (filename == "makefile")
