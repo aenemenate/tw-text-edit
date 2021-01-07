@@ -23,8 +23,8 @@ void Action::undo(TextBuffer *buffer, Size bufferSize, bool lineNums) {
       buffer->backspace(bufferSize, lineNums, false);
       break;
     case (ActionType::Delete):
-      if (buffer->caretPos != buffer->caretSelPos)
-           buffer->caretPos = min(this->caretPos, this->caretSelPos);
+      if (this->caretPos != this->caretSelPos)
+        buffer->caretPos = min(this->caretPos, this->caretSelPos);
       else buffer->caretPos = this->caretPos;
       buffer->caretSelPos = buffer->caretPos;
       buffer->insert(this->text, bufferSize, lineNums, false);
@@ -33,13 +33,15 @@ void Action::undo(TextBuffer *buffer, Size bufferSize, bool lineNums) {
 }
 
 void Action::redo(TextBuffer *buffer, Size bufferSize, bool lineNums) {
-  buffer->caretPos = this->caretPos;
-  buffer->caretSelPos = this->caretSelPos;
   switch (this->type) {
     case (ActionType::Insert):
+      buffer->caretPos = this->caretPos;
+      buffer->caretSelPos = this->caretPos;
       buffer->insert(this->text, bufferSize, lineNums, false);
       break;
     case (ActionType::Delete):
+      buffer->caretPos = this->caretPos;
+      buffer->caretSelPos = this->caretSelPos;
       buffer->backspace(bufferSize, lineNums, false);
       break;
   }
@@ -137,10 +139,10 @@ void TextBuffer::backspace(Size bufferSize, bool lineNums, bool undo) {
   int len = caretPos == caretSelPos ? 1 : max(caretPos, caretSelPos) - min(caretPos, caretSelPos);
   if (undo) {
     undos.push_back({ 
-      ActionType::Delete, 
-      buffer.substr(min(caretPos, caretSelPos), len),
-      caretPos,
-      caretSelPos
+      ActionType::Delete,
+      buffer.substr(min(caretPos-1, caretSelPos-1), len),
+      max(0, caretPos-1),
+      max(0, caretSelPos-1)
     });
     redos.clear();
   }
@@ -167,7 +169,7 @@ void TextBuffer::backspace(Size bufferSize, bool lineNums, bool undo) {
 
 void TextBuffer::insert(std::string str, Size bufferSize, bool lineNums, bool undo) {
   if (caretPos != caretSelPos)
-    backspace(bufferSize, lineNums, true);
+    backspace(bufferSize, lineNums, undo);
   if (undo) {
     undos.push_back({ 
       ActionType::Insert, 

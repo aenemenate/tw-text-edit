@@ -26,7 +26,6 @@ EditorData editorData;
 void init(int argc, char *argv[]) {
   fs::path startPath = fs::current_path();
   buildEditorData(&editorData);
-
 #if defined(_WIN32) || defined(_WIN64)
   FreeConsole();
   fs::current_path(fs::path(_pgmptr).parent_path());
@@ -38,11 +37,9 @@ void init(int argc, char *argv[]) {
     path = dirname(result);
   fs::current_path(fs::path(std::string(path)));
 #endif
-
   terminal_open();
   terminal_set("window.size=80x32");
   terminal_refresh();
-
   fs::current_path(startPath);
   if (argc > 1)
   for (int i = 1; i < argc; ++i) {
