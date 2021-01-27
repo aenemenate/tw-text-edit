@@ -1,17 +1,15 @@
 
 #define _AMD64_
 
-#include <BearLibTerminal.h>
-
 #include "editor_data.h"
 #include "base_types.h"
 #include "editor_actions.h"
 #include "status_bar.h"
+#include "util/filesystem.h"
 
 #include <string>
 #include <iostream>
-
-#include "util/filesystem.h"
+#include <BearLibTerminal.h>
 
 #if defined(_WIN32) || defined(_WIN64)
   #include <windows.h>
@@ -63,6 +61,7 @@ void init(int argc, char *argv[]) {
       if (arg != "") {
         editorData.workingDirectory = startPath.string();
         OpenFile(arg, &editorData);
+        
         if (std::string{argv[1]} == ".") {
 	      editorData.textDropdown.showing = true;
 	      editorData.textDropdown.action = TextAction::Open;

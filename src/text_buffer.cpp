@@ -140,7 +140,7 @@ void TextBuffer::backspace(Size bufferSize, bool lineNums, bool undo) {
   if (undo) {
     undos.push_back({ 
       ActionType::Delete,
-      buffer.substr(min(caretPos-1, caretSelPos-1), len),
+      buffer.substr(min(max(0, caretPos-1), max(0, caretSelPos-1)), len),
       max(0, caretPos-1),
       max(0, caretSelPos-1)
     });

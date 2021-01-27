@@ -24,7 +24,6 @@ All Systems: Boost Serialization static version
 
 Linux only: xsel
 
-
 # Portfolio
 
 ![Blank screen](https://i.imgur.com/q6KaHSP.png)

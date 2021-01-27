@@ -10,7 +10,11 @@ void buildEditorData(EditorData *editorData) {
   editorData->running = true;
   editorData->lineNums = false;
   editorData->nextFile = 1;
+#if defined(_WIN32) || defined(_WIN64)
   editorData->workingDirectory = "C:";
+#elif defined(linux)
+  editorData->workingDirectory = "";
+#endif
   buildMenuBar(&(editorData->menuBar));
   buildBufferList(&(editorData->buffers));
   buildTextDropdown(&(editorData->textDropdown), termSize);
