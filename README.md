@@ -24,6 +24,8 @@ All Systems: Boost Serialization static version
 
 Linux only: xsel
 
+Windows only: BearLibTerminal.dll in editor directory http://foo.wyrd.name/en:bearlibterminal
+
 # Portfolio
 
 ![Blank screen](https://i.imgur.com/q6KaHSP.png)
