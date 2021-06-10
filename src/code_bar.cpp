@@ -107,7 +107,7 @@ void CodeBar::UpdateBlocks(TextBuffer *buf) {
 }
 
 void CodeBar::Update(TextBuffer *buf) {
-  if (buf->name.find(".cpp", 0) != std::string::npos
+/*  if (buf->name.find(".cpp", 0) != std::string::npos
   || (buf->name.find(".h", 0)   != std::string::npos 
      && buf->name.find(".html",0) == std::string::npos)
   || buf->name.find(".hpp", 0) != std::string::npos
@@ -118,7 +118,7 @@ void CodeBar::Update(TextBuffer *buf) {
     UpdateBlocks(buf);
   }
   else
-    showing = false;
+*/    showing = false;
 }
 
 bool CodeBar::IsBlockAtLine(int lineNumber) {

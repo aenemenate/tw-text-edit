@@ -6,7 +6,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
-
+
 std::string getTime() {
   time_t rawtime;
   struct tm * timeinfo;
