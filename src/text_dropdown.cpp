@@ -13,6 +13,13 @@
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
+int selected_menu_option = 0;
+
+#if defined(_WIN32) || defined(_WIN64)
+  char file_delimiter = '\\';
+#elif defined(linux)
+  char file_delimiter = '/';
+#endif
 
 void buildTextDropdown(TextDropdown *textDropdown, Size termSize) {
   textDropdown->inputBuffer = buildTextBuffer("", "", true, {0, 0}, {max(0, termSize.width - 30), 1}, "");
@@ -37,22 +44,22 @@ void drawTextDropdown(EditorData *editorData, Size termSize) {
       terminal_print(min(x_pos, termSize.width - workingDirectory->length()),0,workingDirectory->c_str());
       int i = 1;
       try {
-        for (const auto & entry : fs::directory_iterator(*workingDirectory + '/')) {
+        for (const auto & entry : fs::directory_iterator(*workingDirectory + file_delimiter)) {
           std::string entry_name = entry.path().filename().string();
           try {
             using fs::directory_iterator;
-            directory_iterator(entry.path().string() + '/');
+            directory_iterator(entry.path().string() + file_delimiter);
           }
           catch (fs::filesystem_error ex) {
             continue;
           }
           if (entry.is_directory()) {
             terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
-            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{'/' + entry_name}.c_str());
+            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{file_delimiter + entry_name}.c_str());
             ++i;
           }
         }
-        for (const auto & entry : fs::directory_iterator(*workingDirectory + '/')) {
+        for (const auto & entry : fs::directory_iterator(*workingDirectory + file_delimiter)) {
           std::string entry_name = entry.path().filename().string();
           if (!entry.is_directory()) {
             terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
@@ -98,7 +105,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
             if(illegalChars.find(*it) != std::string::npos)
               break;
           }
-          filename = editorData->workingDirectory + '/' + inputText;
+          filename = editorData->workingDirectory + file_delimiter + inputText;
           if (inputText != "" && inputText != "." && isNotAllSpaces(inputText)) {
             if (fs::exists(filename)) {
               if (inputText == "..") {
@@ -113,7 +120,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
               }
               else {
                 if (editorData->textDropdown.action == TextAction::Open)
-                  OpenFile(editorData->workingDirectory + '/' + editorData->textDropdown.inputBuffer.buffer, editorData);
+                  OpenFile(editorData->workingDirectory + file_delimiter + editorData->textDropdown.inputBuffer.buffer, editorData);
                 else if (editorData->textDropdown.action == TextAction::Save) {
                   // TODO: move this into save function and pass filename and filepath as parameters
                   std::ofstream out(filename);
@@ -170,7 +177,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
           // prompt for replace text
           break;
       }
-      if (editorData->workingDirectory.back() == '/')
+      if (editorData->workingDirectory.back() == file_delimiter)
         editorData->workingDirectory = editorData->workingDirectory.substr(0, editorData->workingDirectory.length() - 1);
       return true;
     }
