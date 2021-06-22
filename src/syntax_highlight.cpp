@@ -5,7 +5,6 @@
 #include "text_buffer.h"
 
 void Syntax::highlightMultiLineComments(char openDelim, char closedDelim, TextBuffer *buf) {
-  
   color_t fg_color;
   int ix = 0;
   bool toggleMultiLineComment = false;
@@ -69,7 +68,6 @@ void Syntax::highlightStrings(char delim, TextBuffer *buf, char delimVariant) {
 }
 
 void Syntax::highlightCharacters(TextBuffer *buf) {
-
   color_t fg_color;
   int ix = 0;
   bool toggleChar = false;
