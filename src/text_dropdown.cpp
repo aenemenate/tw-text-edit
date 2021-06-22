@@ -14,6 +14,9 @@
 #endif
 
 int selected_menu_option = 0;
+std::string selected_option_name = "";
+int num_folder_options = 0;
+int num_file_options = 0;
 
 #if defined(_WIN32) || defined(_WIN64)
   char file_delimiter = '\\';
@@ -35,6 +38,7 @@ void resetTextDropdown(TextDropdown *textDropdown) {
 }
 
 void drawTextDropdown(EditorData *editorData, Size termSize) {
+  selected_option_name == "";
   TextDropdown *textDropdown = &(editorData->textDropdown);
   std::string *workingDirectory = &(editorData->workingDirectory);
   if (textDropdown->showing) {
@@ -54,19 +58,34 @@ void drawTextDropdown(EditorData *editorData, Size termSize) {
             continue;
           }
           if (entry.is_directory()) {
+	    if (i == selected_menu_option)
+	      terminal_bkcolor(color_from_name("dark workspacedefaultbk"));
             terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
-            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{file_delimiter + entry_name}.c_str());
+            terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT,
+				std::string{file_delimiter + entry_name}.c_str());
+	    if (i == selected_menu_option) {
+	      terminal_bkcolor(color_from_name("workspacedefaultbk"));
+	      selected_option_name = entry_name;
+            }
             ++i;
           }
         }
+	num_folder_options = i-1;
         for (const auto & entry : fs::directory_iterator(*workingDirectory + file_delimiter)) {
           std::string entry_name = entry.path().filename().string();
           if (!entry.is_directory()) {
+	    if (i == selected_menu_option)
+	      terminal_bkcolor(color_from_name("dark workspacedefaultbk"));
             terminal_clear_area(x_pos, 1+i, termSize.width - x_pos, 1);
             terminal_print_ext(x_pos, 1+i, termSize.width - x_pos, 1, TK_ALIGN_LEFT, std::string{entry_name}.c_str());
+	    if (i == selected_menu_option) {
+	      terminal_bkcolor(color_from_name("workspacedefaultbk"));
+	      selected_option_name = entry_name;
+            }
             ++i;
           }
         }
+	num_file_options = i - num_folder_options - 1;
       }
       catch (fs::filesystem_error _ex) {
         *workingDirectory = fs::path(*workingDirectory).parent_path().string();
@@ -96,7 +115,6 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
       std::string filename;
       std::string inputText = editorData->textDropdown.inputBuffer.buffer;
       std::string illegalChars = "\\/:?\"<>|";
-      
       int pos, occurrences;
       switch (editorData->textDropdown.action) {
         case TextAction::Open:
@@ -105,8 +123,12 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
             if(illegalChars.find(*it) != std::string::npos)
               break;
           }
+          if (inputText == "" && selected_menu_option > 0)
+	    inputText = selected_option_name;
           filename = editorData->workingDirectory + file_delimiter + inputText;
           if (inputText != "" && inputText != "." && isNotAllSpaces(inputText)) {
+	    selected_menu_option = 0;
+	    selected_option_name = "";
             if (fs::exists(filename)) {
               if (inputText == "..") {
                 editorData->workingDirectory = fs::path(editorData->workingDirectory).parent_path().string();
@@ -120,7 +142,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
               }
               else {
                 if (editorData->textDropdown.action == TextAction::Open)
-                  OpenFile(editorData->workingDirectory + file_delimiter + editorData->textDropdown.inputBuffer.buffer, editorData);
+                  OpenFile(filename, editorData);
                 else if (editorData->textDropdown.action == TextAction::Save) {
                   // TODO: move this into save function and pass filename and filepath as parameters
                   std::ofstream out(filename);
@@ -156,10 +178,7 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
             }
           }
           break;
-
         case TextAction::Find:
-          // highlight found text, then enter mode where user can press left and right to jump to instances
-
           occurrences = 0;
           pos = 0;
           if (editorData->buffers.textBuffers[editorData->buffers.cur].buffer != "" && editorData->textDropdown.inputBuffer.buffer != "") {
@@ -180,6 +199,15 @@ bool handleInputTextDropdown(EditorData *editorData, int key, Size termSize) {
       if (editorData->workingDirectory.back() == file_delimiter)
         editorData->workingDirectory = editorData->workingDirectory.substr(0, editorData->workingDirectory.length() - 1);
       return true;
+    }
+    else if (editorData->textDropdown.action == TextAction::Save
+	 ||  editorData->textDropdown.action == TextAction::Open) {
+      if (key == TK_UP) {
+	selected_menu_option = max(0, selected_menu_option - 1);
+      }
+      else if (key == TK_DOWN) {
+	selected_menu_option = min(num_folder_options + num_file_options, selected_menu_option + 1);
+      }
     }
     // print any extra necessary text
   }
